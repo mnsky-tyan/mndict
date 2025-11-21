@@ -1,0 +1,122 @@
+Running Gradle task 'assembleDebug'...                          
+lib/main.dart:8:16: Error: The final variable 'title' must be initialized.
+Try adding an initializer ('= expression') to the declaration.
+  final String title;
+               ^^^^^
+lib/main.dart:12:1: Error: Expected a declaration, but got '}'.
+}
+^
+lib/main.dart:11:9: Error: Type 'MyHomePage' not found.
+  State<MyHomePage> createState() => _MyHomePageState();
+        ^^^^^^^^^^
+lib/main.dart:11:3: Error: Type 'State' not found.
+  State<MyHomePage> createState() => _MyHomePageState();
+  ^^^^^
+lib/main.dart:14:38: Error: Type 'MyHomePage' not found.
+class _MyHomePageState extends State<MyHomePage> {
+                                     ^^^^^^^^^^
+lib/main.dart:14:32: Error: Type 'State' not found.
+class _MyHomePageState extends State<MyHomePage> {
+                               ^^^^^
+lib/main.dart:29:3: Error: Type 'Widget' not found.
+  Widget build(BuildContext context) {
+  ^^^^^^
+lib/main.dart:29:16: Error: Type 'BuildContext' not found.
+  Widget build(BuildContext context) {
+               ^^^^^^^^^^^^
+lib/main.dart:8:16: Error: Field 'title' should be initialized because its type 'String' doesn't allow null.
+  final String title;
+               ^^^^^
+lib/main.dart:18:5: Error: The method 'setState' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'setState'.
+    setState(() {
+    ^^^^^^^^
+lib/main.dart:29:16: Error: 'BuildContext' isn't a type.
+  Widget build(BuildContext context) {
+               ^^^^^^^^^^^^
+lib/main.dart:64:22: Error: 'Widget' isn't a type.
+          children: <Widget>[
+                     ^^^^^^
+lib/main.dart:65:19: Error: Not a constant expression.
+            const Text('You have pushed the button this many times:'),
+                  ^^^^
+lib/main.dart:76:27: Error: Not a constant expression.
+        child: const Icon(Icons.add),
+                          ^^^^^
+lib/main.dart:76:22: Error: Not a constant expression.
+        child: const Icon(Icons.add),
+                     ^^^^
+lib/main.dart:36:12: Error: The method 'Scaffold' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'Scaffold'.
+    return Scaffold(
+           ^^^^^^^^
+lib/main.dart:37:15: Error: The method 'AppBar' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'AppBar'.
+      appBar: AppBar(
+              ^^^^^^
+lib/main.dart:41:26: Error: The getter 'Theme' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'Theme'.
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                         ^^^^^
+lib/main.dart:44:16: Error: The method 'Text' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'Text'.
+        title: Text(widget.title),
+               ^^^^
+lib/main.dart:44:21: Error: The getter 'widget' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'widget'.
+        title: Text(widget.title),
+                    ^^^^^^
+lib/main.dart:46:13: Error: The method 'Center' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'Center'.
+      body: Center(
+            ^^^^^^
+lib/main.dart:49:16: Error: The method 'Column' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'Column'.
+        child: Column(
+               ^^^^^^
+lib/main.dart:63:30: Error: The getter 'MainAxisAlignment' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'MainAxisAlignment'.
+          mainAxisAlignment: MainAxisAlignment.center,
+                             ^^^^^^^^^^^^^^^^^
+lib/main.dart:66:13: Error: The method 'Text' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'Text'.
+            Text(
+            ^^^^
+lib/main.dart:68:22: Error: The getter 'Theme' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'Theme'.
+              style: Theme.of(context).textTheme.headlineMedium,
+                     ^^^^^
+lib/main.dart:73:29: Error: The method 'FloatingActionButton' isn't defined for the type '_MyHomePageState'.
+ - '_MyHomePageState' is from 'package:app/main.dart' ('lib/main.dart').
+Try correcting the name to the name of an existing method, or defining a method named 'FloatingActionButton'.
+      floatingActionButton: FloatingActionButton(
+                            ^^^^^^^^^^^^^^^^^^^^
+Target kernel_snapshot_program failed: Exception
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileFlutterBuildDebug'.
+> Process 'command 'C:\flutter\bin\flutter.bat'' finished with non-zero exit value 1
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 7s
+Running Gradle task 'assembleDebug'...                              7.9s
+Gradle task assembleDebug failed with exit code 1

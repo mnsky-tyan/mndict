@@ -1,0 +1,21 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Custom Line Endings
+*.ps1 eol=crlf
+*.bat eol=crlf
+*.sh eol=lf
+
+# Diff Drivers
+*.cpp diff=cpp
+*.h diff=cpp
+*.c diff=cpp
+*.dart diff=dart
+
+# Binary Files
+*.so binary
+*.gguf binary
+*.bin binary
+*.png binary
+*.jpg binary
+*.ico binary

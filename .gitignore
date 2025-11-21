@@ -1,0 +1,36 @@
+# Build Directories
+build-*/
+cmake-build-*/
+app/build/
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+
+# Compiled Binaries & Libraries
+*.so
+*.o
+*.obj
+*.a
+*.lib
+*.dll
+*.dylib
+
+# Logs
+*.log
+
+# Large Model Files
+*.gguf
+*.bin
+
+# IDE & System Files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Llama.cpp source (do not track)
+llama.cpp/
+
+# Artifacts (Binaries)
+# We ignore the binary artifacts to keep the repo light
+artifacts/**/*.so
