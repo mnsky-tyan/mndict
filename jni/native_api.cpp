@@ -37,19 +37,26 @@ int32_t llama_native_init_model(const char* model_path, llama_native_init_option
         return LLAMA_NATIVE_ERR_INVALID_ARGUMENT;
     }
 
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Initializing model from: %s", model_path);
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Options: threads=%d, context_k=%f", options.thread_count, options.max_context_k);
+
     llama_model_params model_params = llama_model_default_params();
+    model_params.use_mmap = true; // Explicitly enable mmap for lower latency
     // model_params.n_gpu_layers = 0; // CPU only
     
     llama_model* model = llama_model_load_from_file(model_path, model_params);
     if (!model) {
+        __android_log_print(ANDROID_LOG_ERROR, "LlamaNative", "Failed to load model from file");
         // TODO: Better error detection (file not found vs corrupt)
         return LLAMA_NATIVE_ERR_FILE_NOT_FOUND;
     }
 
     llama_context_params ctx_params = llama_context_default_params();
-    ctx_params.n_ctx = options.max_context_k > 0 ? options.max_context_k * 1024 : 2048; // max_context_k is in K (1024s)
+    ctx_params.n_ctx = options.max_context_k > 0 ? (int)(options.max_context_k * 1024) : 2048; // max_context_k is in K (1024s)
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Calculated n_ctx: %d", ctx_params.n_ctx);
     ctx_params.n_threads = options.thread_count > 0 ? options.thread_count : 4;
     ctx_params.n_threads_batch = ctx_params.n_threads;
+    ctx_params.flash_attn_type = LLAMA_FLASH_ATTN_TYPE_ENABLED;
 
     llama_context* ctx = llama_init_from_model(model, ctx_params);
     if (!ctx) {
@@ -59,7 +66,6 @@ int32_t llama_native_init_model(const char* model_path, llama_native_init_option
 
     NativeModel* native_model = new NativeModel();
     native_model->model = model;
-    native_model->ctx = ctx;
     native_model->ctx = ctx;
     native_model->sampler = nullptr; // Initialized in generate
     native_model->n_past = 0;        // Initialize context position
@@ -89,7 +95,17 @@ int32_t llama_native_generate(llama_native_handle handle, const char* prompt, ll
 
     NativeModel* native_model = static_cast<NativeModel*>(handle);
     
-    // Reset state for new generation
+    // Reset state for new generation (Single-turn optimization)
+    // We discard previous context because the user wants fresh lookups every time.
+    native_model->n_past = 0;
+    native_model->n_remain = 0;
+    
+    // Clear KV cache to prevent position conflicts
+    llama_memory_t mem = llama_get_memory(native_model->ctx);
+    llama_memory_clear(mem, true);
+    
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Resetting n_past to 0 and clearing KV cache");
+
     if (native_model->sampler) {
         // llama_sampler_free(native_model->sampler); 
     }
@@ -104,12 +120,18 @@ int32_t llama_native_generate(llama_native_handle handle, const char* prompt, ll
     llama_sampler_chain_add(native_model->sampler, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
 
     __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Generating for prompt: %s", prompt);
+    // Log first 200 chars of prompt to check for corruption/accumulation
+    char debug_buf[201];
+    std::strncpy(debug_buf, prompt, 200);
+    debug_buf[200] = '\0';
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Prompt start: %s", debug_buf);
 
     const llama_vocab* vocab = llama_model_get_vocab(native_model->model);
 
     // Tokenize prompt
     // First, get the required buffer size
     const int n_prompt_bytes = std::strlen(prompt);
+
     int n_prompt_tokens = llama_tokenize(vocab, prompt, n_prompt_bytes, NULL, 0, true, true);
     
     __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Token count: %d", n_prompt_tokens);
@@ -132,6 +154,8 @@ int32_t llama_native_generate(llama_native_handle handle, const char* prompt, ll
         __android_log_print(ANDROID_LOG_ERROR, "LlamaNative", "Second tokenization failed: %d vs %d", actual_tokens, n_prompt_tokens);
         return LLAMA_NATIVE_ERR_UNKNOWN;
     }
+    
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Tokenization complete. Starting batch decode.");
 
     // Prepare batch
     int32_t n_batch = 512;
@@ -213,6 +237,8 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
     }
     
     *token_text_out = native_model->current_token_text.c_str();
+    
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Generated token: '%s' (id: %d)", *token_text_out, new_token_id);
 
     // Check for stop strings (hallucinations/next turn markers)
     // Check for stop strings (hallucinations/next turn markers)
@@ -220,6 +246,7 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
     if (strstr(text, "<|user|>") || strstr(text, "<|assistant|>") || 
         strstr(text, "<luser") || strstr(text, "<lassistant") ||
         strstr(text, "<|end|>") || strstr(text, "<|system|>") ||
+        strstr(text, "<|im_end|>") || strstr(text, "<|im_start|>") ||
         strstr(text, "<|eot_id|>") || strstr(text, "<leot-id") ||
         strstr(text, "<|start_header_id|>") || strstr(text, "<Istart-header-id") ||
         strstr(text, "<|end_header_id|>") || strstr(text, "<lend-header-id") ||

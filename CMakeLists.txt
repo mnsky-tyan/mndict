@@ -1,5 +1,16 @@
 cmake_minimum_required(VERSION 3.14)
 project(llama_android)
+# Force rebuild for context size change
+
+# Optimization flags
+# Optimization flags - Force O3 for both Debug and Release to ensure fast inference
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O3 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O3 -DNDEBUG")
+
 
 # Configure llama.cpp options
 set(LLAMA_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)

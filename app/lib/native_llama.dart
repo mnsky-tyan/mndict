@@ -1,6 +1,8 @@
 import 'dart:ffi';
 import 'dart:io';
 import 'package:ffi/ffi.dart';
+import 'dart:convert';
+import 'dart:typed_data';
 
 // C function signatures
 typedef NativeInitModel = Int32 Function(Pointer<Utf8>, NativeInitOptions, Pointer<Pointer<Void>>);
@@ -24,8 +26,8 @@ final class NativeInitOptions extends Struct {
   external int logging_verbosity;
   @Int32()
   external int seed;
-  @Int32()
-  external int max_context_k;
+  @Float()
+  external double max_context_k;
 }
 
 final class NativeGenerateOptions extends Struct {
@@ -66,10 +68,15 @@ class LlamaNative {
 
   Future<int> loadModel(String modelPath, {
     int threads = 4, 
-    int contextSizeK = 2,
+    double contextSizeK = 2.0,
     int loggingVerbosity = 0,
     int seed = -1,
   }) async {
+    if (_modelHandle != nullptr) {
+      _freeModel(_modelHandle);
+      _modelHandle = nullptr;
+    }
+
     final pathPtr = modelPath.toNativeUtf8();
     final handlePtr = calloc<Pointer<Void>>();
     
@@ -121,19 +128,32 @@ class LlamaNative {
 
     final tokenTextPtr = calloc<Pointer<Utf8>>();
     
-    try {
+    Stream<List<int>> byteStream() async* {
       while (true) {
         final result = _streamNextToken(_modelHandle, tokenTextPtr);
         if (result == 0) { // Success
-          final text = tokenTextPtr.value.toDartString();
-          yield text;
-        } else if (result == 1) { // EOF
+          final ptr = tokenTextPtr.value.cast<Uint8>();
+          int len = 0;
+          while (ptr[len] != 0) {
+            len++;
+          }
+          
+          if (len > 0) {
+            // Copy the bytes to a Dart Uint8List
+            yield Uint8List.fromList(ptr.asTypedList(len));
+          }
+        } else if (result == -7) { // EOF (LLAMA_NATIVE_EOF)
+          print("Native Llama: EOF reached");
           break;
         } else {
-          // Error
+          print("Native Llama: Error $result");
           break;
         }
       }
+    }
+
+    try {
+      yield* byteStream().transform(Utf8Decoder(allowMalformed: true));
     } finally {
       calloc.free(tokenTextPtr);
     }

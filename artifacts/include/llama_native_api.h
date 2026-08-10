@@ -23,7 +23,7 @@ typedef struct {
     int32_t thread_count;
     int32_t logging_verbosity;
     int32_t seed; // -1 for random
-    int32_t max_context_k;
+    float max_context_k;
 } llama_native_init_options;
 
 // Options for generate

@@ -1,12 +1,13 @@
-# Build Directories
+# ============================================================
+# BUILD OUTPUT DIRECTORIES
+# ============================================================
 build-*/
 cmake-build-*/
 app/build/
-app/.dart_tool/
-app/.flutter-plugins
-app/.flutter-plugins-dependencies
 
-# Compiled Binaries & Libraries
+# ============================================================
+# COMPILED BINARIES & LIBRARIES
+# ============================================================
 *.so
 *.o
 *.obj
@@ -15,22 +16,101 @@ app/.flutter-plugins-dependencies
 *.dll
 *.dylib
 
-# Logs
+# ============================================================
+# LOGS & TEMPORARY TEXT FILES
+# ============================================================
 *.log
+*.txt
+!app/analysis_options.yaml
 
-# Large Model Files
+# ============================================================
+# LARGE MODEL FILES
+# ============================================================
+# GGUF quantised models
 *.gguf
+
+# Safetensors / binary model weights
+*.safetensors
 *.bin
 
-# IDE & System Files
+# ============================================================
+# LORA / FINE-TUNING ARTIFACTS
+# (training outputs — not part of the runnable app)
+# ============================================================
+lora_bnb/
+lora_fp16/
+lora_full/
+lora_new/
+
+# ============================================================
+# TEST MODEL DIRECTORY
+# (large GGUF files used only for local testing)
+# ============================================================
+test_model/
+
+# ============================================================
+# PYTHON TRAINING / CONVERSION SCRIPTS & CACHE
+# (not part of the Flutter app)
+# ============================================================
+extract_lora.py
+run_lora.py
+lora_examples/
+__pycache__/
+*.pyc
+*.pyo
+
+# ============================================================
+# LLAMA.CPP UPSTREAM SOURCE
+# (tracked as a git submodule — do NOT ignore here)
+# ============================================================
+# llama.cpp/ is registered as a submodule in .gitmodules
+
+# ============================================================
+# AGENT / AI DOCUMENTATION MARKDOWN
+# (model-specific notes — not app source)
+# ============================================================
+Gemma3.md
+LFM2.md
+Qwen3.md
+llama_cpp.md
+
+# ============================================================
+# ARTIFACTS DIRECTORY — spec/doc markdowns only
+# (keep the include/ header and android/ prebuilt .so files)
+# ============================================================
+artifacts/*.md
+
+# ============================================================
+# FLUTTER / DART GENERATED FILES
+# ============================================================
+app/.dart_tool/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+app/.pub-cache/
+app/.pub/
+
+# ============================================================
+# ANDROID LOCAL FILES
+# ============================================================
+app/android/local.properties
+app/android/.gradle/
+app/android/.kotlin/
+app/android/app/debug/
+app/android/app/profile/
+app/android/app/release/
+
+# ============================================================
+# IDE & EDITOR FILES
+# ============================================================
 .idea/
 .vscode/
+*.iml
+*.ipr
+*.iws
 .DS_Store
 Thumbs.db
 
-# Llama.cpp source (do not track)
-llama.cpp/
-
-# Artifacts (Binaries)
-# We ignore the binary artifacts to keep the repo light
-artifacts/**/*.so
+# ============================================================
+# UI PROTOTYPE (HTML/CSS sketch, not Flutter source)
+# ============================================================
+ui_prototype/

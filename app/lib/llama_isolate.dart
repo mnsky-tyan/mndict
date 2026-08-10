@@ -31,6 +31,7 @@ class LlamaIsolate {
         _tokenStreamController.add(message);
       } else if (message is Map && message['type'] == 'error') {
         _tokenStreamController.addError(message['message']);
+        _statusStreamController.add(LlamaStatus.error);
       } else if (message is Map && message['type'] == 'done') {
         // Generation finished
         // We don't close the stream here because we might generate again
@@ -60,7 +61,7 @@ class LlamaIsolate {
   }
 
   Future<void> loadModel(String modelPath, {
-    int maxContextK = 2,
+    double maxContextK = 2.0,
     int threadCount = 4,
     int maxTokens = 128,
     int loggingVerbosity = 1,
@@ -80,13 +81,28 @@ class LlamaIsolate {
     });
   }
 
-  Future<void> generate(String prompt, {int maxTokens = 2048}) async {
+  Future<void> generate(String prompt, {
+    int maxTokens = 2048,
+    double temperature = 0.8,
+    double topP = 0.95,
+    int topK = 40,
+  }) async {
     if (_sendPort == null) throw Exception("Isolate not spawned");
     _sendPort!.send({
       'command': 'generate',
       'prompt': prompt,
       'maxTokens': maxTokens,
+      'temperature': temperature,
+      'topP': topP,
+      'topK': topK,
     });
+  }
+
+
+
+  Future<void> warmup() async {
+    if (_sendPort == null) throw Exception("Isolate not spawned");
+    _sendPort!.send({'command': 'warmup'});
   }
 
   void dispose() {
@@ -124,7 +140,17 @@ class LlamaIsolate {
           } else if (command == 'generate') {
             final prompt = message['prompt'];
             final maxTokens = message['maxTokens'] ?? 2048;
-            final result = await llama.generate(prompt, maxTokens: maxTokens);
+            final temperature = message['temperature'] ?? 0.8;
+            final topP = message['topP'] ?? 0.95;
+            final topK = message['topK'] ?? 40;
+
+            final result = await llama.generate(
+              prompt, 
+              maxTokens: maxTokens,
+              temperature: temperature,
+              topP: topP,
+              topK: topK,
+            );
             
             if (result != 0) {
               mainSendPort.send({'type': 'error', 'message': 'Generation failed: $result'});
@@ -135,6 +161,10 @@ class LlamaIsolate {
               mainSendPort.send(token);
             }
             mainSendPort.send({'type': 'done'});
+            
+          } else if (command == 'warmup') {
+            // Silent warmup: generate 1 token to force allocation of compute buffers
+            await llama.generate(" ", maxTokens: 1);
             
           } else if (command == 'dispose') {
             llama.dispose();
