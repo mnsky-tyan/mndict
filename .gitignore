@@ -17,11 +17,19 @@ app/build/
 *.dylib
 
 # ============================================================
-# LOGS & TEMPORARY TEXT FILES
+# TEXT AND MARKDOWN FILES
+# (Ignore all .txt and .md files except README.md)
+# ============================================================
+*.txt
+*.md
+!README.md
+!**/README.md
+!app/analysis_options.yaml
+
+# ============================================================
+# LOGS & TEMPORARY FILES
 # ============================================================
 *.log
-*.txt
-!app/analysis_options.yaml
 
 # ============================================================
 # LARGE MODEL FILES
@@ -44,9 +52,9 @@ lora_new/
 
 # ============================================================
 # TEST MODEL DIRECTORY
-# (large GGUF files used only for local testing)
+# (ignore directory content except gemma-3 models)
 # ============================================================
-test_model/
+test_model/*
 
 # ============================================================
 # PYTHON TRAINING / CONVERSION SCRIPTS & CACHE
@@ -64,21 +72,6 @@ __pycache__/
 # (tracked as a git submodule — do NOT ignore here)
 # ============================================================
 # llama.cpp/ is registered as a submodule in .gitmodules
-
-# ============================================================
-# AGENT / AI DOCUMENTATION MARKDOWN
-# (model-specific notes — not app source)
-# ============================================================
-Gemma3.md
-LFM2.md
-Qwen3.md
-llama_cpp.md
-
-# ============================================================
-# ARTIFACTS DIRECTORY — spec/doc markdowns only
-# (keep the include/ header and android/ prebuilt .so files)
-# ============================================================
-artifacts/*.md
 
 # ============================================================
 # FLUTTER / DART GENERATED FILES
@@ -114,3 +107,4 @@ Thumbs.db
 # UI PROTOTYPE (HTML/CSS sketch, not Flutter source)
 # ============================================================
 ui_prototype/
+

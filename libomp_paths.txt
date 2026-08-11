@@ -1,5 +1,0 @@
-C:\Users\tyanw\AppData\Local\Android\Sdk\ndk\29.0.14033849\toolchains\llvm\prebuilt\windows-x86_64\lib\clang\21\lib\linux\aarch64\libomp.so
-C:\Users\tyanw\AppData\Local\Android\Sdk\ndk\29.0.14033849\toolchains\llvm\prebuilt\windows-x86_64\lib\clang\21\lib\linux\arm\libomp.so
-C:\Users\tyanw\AppData\Local\Android\Sdk\ndk\29.0.14033849\toolchains\llvm\prebuilt\windows-x86_64\lib\clang\21\lib\linux\i386\libomp.so
-C:\Users\tyanw\AppData\Local\Android\Sdk\ndk\29.0.14033849\toolchains\llvm\prebuilt\windows-x86_64\lib\clang\21\lib\linux\riscv64\libomp.so
-C:\Users\tyanw\AppData\Local\Android\Sdk\ndk\29.0.14033849\toolchains\llvm\prebuilt\windows-x86_64\lib\clang\21\lib\linux\x86_64\libomp.so
