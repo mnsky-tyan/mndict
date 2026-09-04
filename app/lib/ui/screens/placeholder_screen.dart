@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../theme/glass_theme.dart';
 import '../widgets/glass_container.dart';
+import '../widgets/glass_page.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   final String title;
@@ -9,60 +10,27 @@ class PlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          title,
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      body: Stack(
-        children: [
-          // Background Gradient (matching main app)
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFE0C3FC),
-                  Color(0xFF8EC5FC),
-                ],
+    return GlassPage(
+      title: title,
+      child: Center(
+        child: GlassContainer(
+          blur: 0,
+          borderRadius: 24,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Coming soon',
+                  style: GlassText.display(GlassPalette.light, 17)),
+              const SizedBox(height: 6),
+              Text(
+                'This section isn\u2019t built yet.',
+                style: GlassText.body(GlassPalette.light, 13,
+                    color: GlassPalette.light.textSecondary),
               ),
-            ),
+            ],
           ),
-          
-          Center(
-            child: GlassContainer(
-              padding: const EdgeInsets.all(30),
-              borderRadius: 20,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Title removed from here
-                  const SizedBox(height: 20),
-                  Text(
-                    "Coming Soon",
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

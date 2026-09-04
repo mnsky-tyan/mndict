@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin:0; background:#0B0E1A; font-family:'Segoe UI',sans-serif; color:#E8EBF8; }
+  .sheet { display:grid; grid-template-columns:repeat(2, 400px); gap:36px; padding:40px; justify-content:center; }
+  .cell { width:400px; text-align:center; }
+  .tile { width:400px; height:400px; border-radius:90px; overflow:hidden; box-shadow:0 30px 60px rgba(0,0,0,.5); }
+  .name { margin-top:18px; font-size:19px; font-weight:600; letter-spacing:.2px; }
+  .why  { margin-top:6px; font-size:13px; line-height:1.5; color:#8C96B8; padding:0 12px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <!-- A · Aurora Orb -->
+  <div class="cell">
+    <svg class="tile" viewBox="0 0 400 400">
+      <defs>
+        <linearGradient id="aBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#EDF1FB"/><stop offset="1" stop-color="#F7F1FA"/>
+        </linearGradient>
+        <radialGradient id="aOrb" cx="0.38" cy="0.32" r="0.85">
+          <stop offset="0" stop-color="#C9C2FF"/><stop offset="0.45" stop-color="#9D8FF2"/>
+          <stop offset="0.8" stop-color="#7A6BE8"/><stop offset="1" stop-color="#6A5BD8"/>
+        </radialGradient>
+        <filter id="aBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="34"/></filter>
+        <filter id="aSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>
+      </defs>
+      <rect width="400" height="400" fill="url(#aBg)"/>
+      <circle cx="120" cy="110" r="95" fill="#9DB8FF" opacity="0.75" filter="url(#aBlur)"/>
+      <circle cx="315" cy="170" r="80" fill="#E3B4F2" opacity="0.7" filter="url(#aBlur)"/>
+      <circle cx="180" cy="330" r="85" fill="#96E6D3" opacity="0.65" filter="url(#aBlur)"/>
+      <circle cx="200" cy="212" r="104" fill="#8B7FF0" opacity="0.45" filter="url(#aSoft)"/>
+      <ellipse cx="200" cy="296" rx="86" ry="16" fill="#17203D" opacity="0.10" filter="url(#aSoft)"/>
+      <circle cx="200" cy="200" r="84" fill="url(#aOrb)"/>
+      <ellipse cx="174" cy="166" rx="32" ry="21" fill="#FFFFFF" opacity="0.6" filter="url(#aSoft)"/>
+      <path d="M142 240 A76 76 0 0 0 258 240" stroke="#FFFFFF" stroke-width="0" fill="none" opacity="0"/>
+    </svg>
+    <div class="name">A · Aurora Orb</div>
+    <div class="why">The app itself, distilled — the idle orb on the aurora sky. Zero new symbols; pure brand extension.</div>
+  </div>
+
+  <!-- B · Serif m -->
+  <div class="cell">
+    <svg class="tile" viewBox="0 0 400 400">
+      <defs>
+        <linearGradient id="bBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#0E1330"/><stop offset="1" stop-color="#1E1746"/>
+        </linearGradient>
+        <radialGradient id="bOrb" cx="0.36" cy="0.3" r="0.9">
+          <stop offset="0" stop-color="#3D4E9E"/><stop offset="0.55" stop-color="#2A3572"/>
+          <stop offset="1" stop-color="#1D2450"/>
+        </radialGradient>
+        <linearGradient id="bM" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9D2FF"/>
+        </linearGradient>
+        <filter id="bBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="30"/></filter>
+        <filter id="bSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="12"/></filter>
+      </defs>
+      <rect width="400" height="400" fill="url(#bBg)"/>
+      <circle cx="90" cy="90" r="90" fill="#2A4DD0" opacity="0.5" filter="url(#bBlur)"/>
+      <circle cx="330" cy="300" r="85" fill="#B84A9C" opacity="0.35" filter="url(#bBlur)"/>
+      <circle cx="320" cy="90" r="70" fill="#0FA3B1" opacity="0.35" filter="url(#bBlur)"/>
+      <circle cx="200" cy="200" r="112" fill="url(#bOrb)" opacity="0.9"/>
+      <circle cx="200" cy="200" r="112" fill="none" stroke="#FFFFFF" stroke-opacity="0.18" stroke-width="1.5"/>
+      <text x="200" y="248" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="138" fill="url(#bM)">m</text>
+      <ellipse cx="156" cy="130" rx="34" ry="18" fill="#FFFFFF" opacity="0.18" filter="url(#bSoft)"/>
+    </svg>
+    <div class="name">B · Serif m</div>
+    <div class="why">A bookish monogram inside a glass lens — dictionary heritage in the letterform, AI in the lens.</div>
+  </div>
+
+  <!-- C · Book & rising orb -->
+  <div class="cell">
+    <svg class="tile" viewBox="0 0 400 400">
+      <defs>
+        <linearGradient id="cBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#EDF1FB"/><stop offset="1" stop-color="#F7F1FA"/>
+        </linearGradient>
+        <radialGradient id="cOrb" cx="0.38" cy="0.32" r="0.85">
+          <stop offset="0" stop-color="#C9C2FF"/><stop offset="0.5" stop-color="#9D8FF2"/><stop offset="1" stop-color="#6A5BD8"/>
+        </radialGradient>
+        <filter id="cBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="30"/></filter>
+        <filter id="cSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="12"/></filter>
+      </defs>
+      <rect width="400" height="400" fill="url(#cBg)"/>
+      <circle cx="310" cy="100" r="85" fill="#9DB8FF" opacity="0.7" filter="url(#cBlur)"/>
+      <circle cx="90" cy="300" r="80" fill="#96E6D3" opacity="0.6" filter="url(#cBlur)"/>
+      <circle cx="200" cy="122" r="58" fill="#9D8FF2" opacity="0.5" filter="url(#cSoft)"/>
+      <circle cx="200" cy="114" r="43" fill="url(#cOrb)"/>
+      <ellipse cx="186" cy="104" rx="14" ry="9" fill="#FFFFFF" opacity="0.55" filter="url(#cSoft)"/>
+      <g stroke="#17203D" stroke-width="7" fill="none" stroke-linecap="round">
+        <path d="M200 208 C168 188, 118 186, 84 200 L84 296 C118 282, 168 284, 200 304"/>
+        <path d="M200 208 C232 188, 282 186, 316 200 L316 296 C282 282, 232 284, 200 304"/>
+        <path d="M200 208 L200 304"/>
+      </g>
+      <g stroke="#17203D" stroke-width="4.5" opacity="0.35" stroke-linecap="round">
+        <path d="M110 226 C132 220, 152 221, 172 230"/>
+        <path d="M110 250 C132 244, 152 245, 172 254"/>
+        <path d="M228 230 C248 221, 268 220, 290 226"/>
+        <path d="M228 254 C248 245, 268 244, 290 250"/>
+      </g>
+    </svg>
+    <div class="name">C · Book &amp; Rising Orb</div>
+    <div class="why">Dictionary heritage: an open book whose definition rises as light — “words become light”.</div>
+  </div>
+
+  <!-- D · Lens card -->
+  <div class="cell">
+    <svg class="tile" viewBox="0 0 400 400">
+      <defs>
+        <linearGradient id="dBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#0E1330"/><stop offset="1" stop-color="#1E1746"/>
+        </linearGradient>
+        <linearGradient id="dCard" x1="0" y1="0" x2="0.6" y2="1">
+          <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/><stop offset="1" stop-color="#C9D2F2" stop-opacity="0.88"/>
+        </linearGradient>
+        <radialGradient id="dLens" cx="0.38" cy="0.32" r="0.9">
+          <stop offset="0" stop-color="#9DB8FF"/><stop offset="0.6" stop-color="#3D6BFF"/><stop offset="1" stop-color="#2B4BC8"/>
+        </radialGradient>
+        <filter id="dBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="30"/></filter>
+        <filter id="dSoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="14"/></filter>
+      </defs>
+      <rect width="400" height="400" fill="url(#dBg)"/>
+      <circle cx="80" cy="310" r="90" fill="#2A4DD0" opacity="0.45" filter="url(#dBlur)"/>
+      <circle cx="330" cy="80" r="80" fill="#B84A9C" opacity="0.4" filter="url(#dBlur)"/>
+      <g transform="rotate(-8 200 190)">
+        <rect x="92" y="96" width="216" height="196" rx="26" fill="url(#dCard)"/>
+        <rect x="118" y="134" width="122" height="11" rx="5.5" fill="#17203D" opacity="0.75"/>
+        <rect x="118" y="164" width="164" height="8" rx="4" fill="#17203D" opacity="0.28"/>
+        <rect x="118" y="188" width="146" height="8" rx="4" fill="#17203D" opacity="0.28"/>
+        <rect x="118" y="212" width="158" height="8" rx="4" fill="#17203D" opacity="0.28"/>
+        <rect x="118" y="236" width="98" height="8" rx="4" fill="#17203D" opacity="0.28"/>
+      </g>
+      <circle cx="286" cy="282" r="58" fill="#3D6BFF" opacity="0.5" filter="url(#dSoft)"/>
+      <circle cx="286" cy="282" r="44" fill="url(#dLens)"/>
+      <circle cx="286" cy="282" r="44" fill="none" stroke="#FFFFFF" stroke-opacity="0.65" stroke-width="4"/>
+      <path d="M318 314 L348 344" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" opacity="0.9"/>
+      <ellipse cx="270" cy="262" rx="16" ry="10" fill="#FFFFFF" opacity="0.5" filter="url(#dSoft)"/>
+    </svg>
+    <div class="name">D · Lens on the Page</div>
+    <div class="why">Lookup as a gesture: a definition page under an aurora lens — search + reading in one mark.</div>
+  </div>
+
+</div>
+</body>
+</html>

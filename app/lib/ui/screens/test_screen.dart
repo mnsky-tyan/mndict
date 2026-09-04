@@ -1,9 +1,13 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../app_settings.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import '../../services/app_settings.dart';
 import '../../services/vocabulary_service.dart';
 import '../../services/dictionary_service.dart';
+import '../theme/glass_theme.dart';
+import '../widgets/aurora_orb.dart';
+import '../widgets/glass_container.dart';
+import '../widgets/glass_page.dart';
 import '../widgets/vocabulary_detail_popup.dart';
 
 class TestScreen extends StatefulWidget {
@@ -35,6 +39,12 @@ class _TestScreenState extends State<TestScreen> {
     _nextWord();
   }
 
+  @override
+  void dispose() {
+    _inputController.dispose();
+    super.dispose();
+  }
+
   void _nextWord() {
     final words = widget.vocabularyService.getSortedWords(SortType.latest, true);
     if (words.isEmpty) {
@@ -64,7 +74,7 @@ class _TestScreenState extends State<TestScreen> {
 
     try {
       final score = await widget.dictionaryService!.checkSimilarity(word, definition, userInput);
-      
+
       if (!mounted) return;
 
       setState(() {
@@ -89,109 +99,174 @@ class _TestScreenState extends State<TestScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = GlassScope.of(context).palette;
+
     if (_currentWord == null) {
       return Center(
-        child: Text(
-          "Add words to vocabulary to start testing!",
-          style: GoogleFonts.outfit(color: Colors.white, fontSize: 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GlassContainer(
+              width: 64,
+              height: 64,
+              borderRadius: 32,
+              blur: 0,
+              padding: EdgeInsets.zero,
+              child: Center(
+                child: FaIcon(FontAwesomeIcons.graduationCap,
+                    size: 20, color: p.accent),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text('Add words to vocabulary\nto start testing',
+                textAlign: TextAlign.center,
+                style: GlassText.display(p, 18, weight: FontWeight.w600)),
+          ],
         ),
       );
     }
 
+    final isCorrect = _feedbackMessage != null && _feedbackMessage!.startsWith("Correct");
+    final isError = _feedbackMessage != null && _feedbackMessage!.startsWith("Error");
+
     return Stack(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Define this word:",
-                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 16),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                _currentWord!.word,
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
+        Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('DEFINE THIS WORD',
+                    textAlign: TextAlign.center,
+                    style: GlassText.eyebrow(p)),
+                const SizedBox(height: 10),
+                Text(
+                  _currentWord!.word,
+                  textAlign: TextAlign.center,
+                  style: GlassText.display(p, 38, tracking: -1.2),
                 ),
-              ),
-              const SizedBox(height: 30),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                  border: Border.all(color: Colors.white.withOpacity(0.8), width: 2),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                child: TextField(
-                  controller: _inputController,
-                  maxLines: 3,
-                  style: GoogleFonts.outfit(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: "Enter definition...",
-                    hintStyle: GoogleFonts.outfit(color: Colors.white54),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              if (_feedbackMessage != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  child: Text(
-                    _feedbackMessage!,
-                    style: GoogleFonts.outfit(
-                      color: _feedbackMessage!.startsWith("Correct") ? Colors.greenAccent : Colors.redAccent,
-                      fontWeight: FontWeight.bold,
+                const SizedBox(height: 24),
+                GlassContainer(
+                  blur: 0,
+                  borderRadius: 22,
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+                  child: TextField(
+                    controller: _inputController,
+                    maxLines: 3,
+                    minLines: 2,
+                    style: GlassText.body(p, 15, height: 1.5),
+                    cursorColor: p.accent,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Write your definition…",
+                      hintStyle:
+                          GlassText.body(p, 14, color: p.textSecondary),
                     ),
                   ),
                 ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: _nextWord,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.2),
-                      foregroundColor: Colors.white,
+                const SizedBox(height: 14),
+                if (_feedbackMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: GlassContainer(
+                        blur: 0,
+                        sheen: false,
+                        borderRadius: 16,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 8),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            FaIcon(
+                              isError
+                                  ? FontAwesomeIcons.circleXmark
+                                  : FontAwesomeIcons.circleCheck,
+                              size: 14,
+                              color: isCorrect
+                                  ? p.success
+                                  : isError
+                                      ? p.danger
+                                      : p.warn,
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                _feedbackMessage!,
+                                style: GlassText.body(p, 12.5,
+                                    weight: FontWeight.w600,
+                                    color: isCorrect
+                                        ? p.success
+                                        : isError
+                                            ? p.danger
+                                            : p.textSecondary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                    child: const Text("Skip"),
                   ),
-                  ElevatedButton(
-                    onPressed: _isChecking ? null : _checkAnswer,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4FACFE),
-                      foregroundColor: Colors.white,
+                Row(
+                  children: [
+                    Expanded(
+                      child: GlassButton(
+                        label: 'Skip',
+                        height: 48,
+                        onTap: _isChecking ? null : _nextWord,
+                      ),
                     ),
-                    child: _isChecking 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text("Check"),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: PrimaryButton(
+                        label: _isChecking ? '' : 'Check',
+                        height: 48,
+                        onTap: _isChecking ? null : _checkAnswer,
+                        leading: _isChecking
+                            ? SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: AuroraOrb(
+                                  size: 18,
+                                  colorA: Colors.white,
+                                  colorB: Colors.white.withValues(alpha: 0.5),
+                                ),
+                              )
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        
+
         if (_showPopup)
-          VocabularyDetailPopup(
-            word: _currentWord!.word,
-            definition: _currentWord!.definition,
-            onClose: () => setState(() => _showPopup = false),
-            onDelete: () {
-               widget.vocabularyService.removeWord(_currentWord!.word);
-               setState(() => _showPopup = false);
-               _nextWord();
-            },
-            onRefresh: () {
-               // Refresh logic not strictly needed here as it's a test, 
-               // but we can just close and let them try again or show current def.
-               // For now, just close.
-               setState(() => _showPopup = false);
-            },
+          Positioned(
+            left: 8,
+            right: 8,
+            top: 8,
+            bottom: 8,
+            child: VocabularyDetailPopup(
+              word: _currentWord!.word,
+              definition: _currentWord!.definition,
+              onClose: () => setState(() => _showPopup = false),
+              onDelete: () {
+                 widget.vocabularyService.removeWord(_currentWord!.word);
+                 setState(() => _showPopup = false);
+                 _nextWord();
+              },
+              onRefresh: () {
+                 // Refresh logic not strictly needed here as it's a test,
+                 // but we can just close and let them try again or show current def.
+                 // For now, just close.
+                 setState(() => _showPopup = false);
+              },
+            ),
           ),
       ],
     );
