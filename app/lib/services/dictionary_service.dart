@@ -39,7 +39,7 @@ Do not use markdown formatting. Just plain text.
       "Synonyms: <comma-separated synonyms, or none>\n"
       "Antonyms: <comma-separated antonyms, or none>\n"
       "Plain text only, no markdown. "
-      "If you are not certain the entry exists, or you don't know it, reply only: I don't know.";
+      "If you are not certain the entry exists, or you don't know it, reply only: None.";
 
   DictionaryService(this.settings);
 
@@ -140,11 +140,17 @@ Do not use markdown formatting. Just plain text.
     } else if (config.promptStyle == PromptStyle.lfm25) {
       // LFM2.5: the GGUF's add_bos_token=true makes the tokenizer prepend
       // <|startoftext|> — a literal BOS here would double it.
+      // Format reminder rides in the user turn: small models obey the user
+      // turn far better than the system turn (locally verified 2026-09-05).
       prompt =
         "<|im_start|>system\n"
         "$_dictionarySystemPrompt<|im_end|>\n"
         "<|im_start|>user\n"
-        "$word<|im_end|>\n"
+        "$word\n\n"
+        "Use the exact entry format: numbered Meanings with a short sense "
+        "label in parentheses, an Example block with bullet sentence(s) under "
+        "each meaning, and Synonyms/Antonyms lines each formatted as: "
+        "word - short gloss.<|im_end|>\n"
         "<|im_start|>assistant\n";
     } else if (config.promptStyle == PromptStyle.minicpm5) {
       // MiniCPM5: GGUF add_bos_token=false, so the template's <s> is included
