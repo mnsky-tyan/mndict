@@ -27,4 +27,4 @@ This directory contains the build artifacts and documentation for the Android `l
 
 To reproduce the build:
 1.  Ensure Android NDK (r25+) and CMake (3.22+) are installed.
-2.  Run `build_android.ps1` from the project root.
+2.  Run `scripts/build_android.ps1` (it resolves the repo root itself).

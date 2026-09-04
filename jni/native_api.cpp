@@ -41,7 +41,7 @@ int32_t llama_native_init_model(const char* model_path, llama_native_init_option
     __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Options: threads=%d, context_k=%f", options.thread_count, options.max_context_k);
 
     llama_model_params model_params = llama_model_default_params();
-    model_params.use_mmap = true; // Explicitly enable mmap for lower latency
+    model_params.load_mode = LLAMA_LOAD_MODE_MMAP; // Explicitly enable mmap for lower latency
     // model_params.n_gpu_layers = 0; // CPU only
     
     llama_model* model = llama_model_load_from_file(model_path, model_params);
@@ -57,6 +57,11 @@ int32_t llama_native_init_model(const char* model_path, llama_native_init_option
     ctx_params.n_threads = options.thread_count > 0 ? options.thread_count : 4;
     ctx_params.n_threads_batch = ctx_params.n_threads;
     ctx_params.flash_attn_type = LLAMA_FLASH_ATTN_TYPE_ENABLED;
+    // Quantized KV cache halves context RAM (matters for the 5GB MoE on 8GB
+    // phones); requires flash attention. Flip to GGML_TYPE_F16 if a model
+    // hits the slow FA+q8_0 path.
+    ctx_params.type_k = GGML_TYPE_Q8_0;
+    ctx_params.type_v = GGML_TYPE_Q8_0;
 
     llama_context* ctx = llama_init_from_model(model, ctx_params);
     if (!ctx) {
@@ -243,7 +248,7 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
     // Check for stop strings (hallucinations/next turn markers)
     // Check for stop strings (hallucinations/next turn markers)
     const char* text = *token_text_out;
-    if (strstr(text, "<|user|>") || strstr(text, "<|assistant|>") || 
+    if (strstr(text, "<|user|>") || strstr(text, "<|assistant|>") ||
         strstr(text, "<luser") || strstr(text, "<lassistant") ||
         strstr(text, "<|end|>") || strstr(text, "<|system|>") ||
         strstr(text, "<|im_end|>") || strstr(text, "<|im_start|>") ||
@@ -251,6 +256,7 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
         strstr(text, "<|start_header_id|>") || strstr(text, "<Istart-header-id") ||
         strstr(text, "<|end_header_id|>") || strstr(text, "<lend-header-id") ||
         strstr(text, "<leot-idl>") || strstr(text, "< start-header-idl>") ||
+        strstr(text, "<end_of_turn>") || strstr(text, "<turn|>") ||
         strstr(text, "<lend-header-idl>") || strstr(text, "idl>")) {
         
         __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Stop string detected: %s. Stopping generation.", text);

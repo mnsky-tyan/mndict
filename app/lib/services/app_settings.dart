@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum PromptStyle { llama3, chatml, gemma, qwen3, phi }
+enum PromptStyle { llama3, chatml, gemma, qwen3, phi, lfm25, gemma4, minicpm5, nemotron3 }
 
 class ModelConfig {
   final String name;
@@ -28,6 +28,43 @@ class AppSettings {
   static const String _keyTopK = 'top_k';
 
   static const List<ModelConfig> availableModels = [
+    // --- 2026-09 model bake-off candidates (docs/on-device-llm-research-2026-09.md) ---
+    ModelConfig(
+      name: 'LFM2.5 1.2B',
+      url: 'https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/resolve/main/LFM2.5-1.2B-Instruct-Q4_K_M.gguf',
+      filename: 'LFM2.5-1.2B-Instruct-Q4_K_M.gguf',
+      promptStyle: PromptStyle.lfm25,
+      sizeMB: 731,
+    ),
+    ModelConfig(
+      name: 'MiniCPM5 1B',
+      url: 'https://huggingface.co/openbmb/MiniCPM5-1B-GGUF/resolve/main/MiniCPM5-1B-Q4_K_M.gguf',
+      filename: 'MiniCPM5-1B-Q4_K_M.gguf',
+      promptStyle: PromptStyle.minicpm5,
+      sizeMB: 688,
+    ),
+    ModelConfig(
+      name: 'Nemotron 3 Nano 4B',
+      url: 'https://huggingface.co/nvidia/NVIDIA-Nemotron-3-Nano-4B-GGUF/resolve/main/NVIDIA-Nemotron3-Nano-4B-Q4_K_M.gguf',
+      filename: 'NVIDIA-Nemotron3-Nano-4B-Q4_K_M.gguf',
+      promptStyle: PromptStyle.nemotron3,
+      sizeMB: 2837,
+    ),
+    ModelConfig(
+      name: 'Gemma 4 E2B (QAT)',
+      url: 'https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-gguf/resolve/main/gemma-4-E2B_q4_0-it.gguf',
+      filename: 'gemma-4-E2B_q4_0-it.gguf',
+      promptStyle: PromptStyle.gemma4,
+      sizeMB: 3350,
+    ),
+    ModelConfig(
+      name: 'LFM2.5 8B-A1B',
+      url: 'https://huggingface.co/LiquidAI/LFM2.5-8B-A1B-GGUF/resolve/main/LFM2.5-8B-A1B-Q4_K_M.gguf',
+      filename: 'LFM2.5-8B-A1B-Q4_K_M.gguf',
+      promptStyle: PromptStyle.lfm25,
+      sizeMB: 5156,
+    ),
+    // --- Legacy candidates (superseded by the bake-off set) ---
     ModelConfig(
       name: 'Reasoning Llama 1B',
       url: 'https://huggingface.co/tensorblock/Reasoning-Llama-1b-v0.1-GGUF/resolve/main/Reasoning-Llama-1b-v0.1-Q4_K_S.gguf',
@@ -74,7 +111,7 @@ class AppSettings {
 
   late SharedPreferences _prefs;
   
-  double _fontSize = 16.0;
+  double _fontSize = 14.5;
   bool _isDarkMode = false;
   String _selectedModelFilename = availableModels.first.filename;
   
@@ -102,7 +139,7 @@ class AppSettings {
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
-    _fontSize = _prefs.getDouble(_keyFontSize) ?? 16.0;
+    _fontSize = _prefs.getDouble(_keyFontSize) ?? 14.5;
     _isDarkMode = _prefs.getBool(_keyIsDarkMode) ?? false;
     _selectedModelFilename = _prefs.getString(_keySelectedModel) ?? availableModels.first.filename;
     

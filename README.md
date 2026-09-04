@@ -209,11 +209,14 @@ The repository roughly consists of:
 
 ```text
 mndict/
-├── app/                 # Flutter application
+├── app/                 # Flutter application (Android arm64 is the primary target)
+├── jni/                 # C wrapper around llama.cpp, built into libllama.so
+├── CMakeLists.txt       # Native build (consumed by the Android Gradle build)
 ├── llama.cpp/           # llama.cpp Git submodule
-├── scripts/             # Utility/setup scripts
-├── test_model/          # Local model files (ignored by Git)
-├── .gitignore
+├── artifacts/           # Native API header, build/FFI specs
+├── scripts/             # Native build + model download + LoRA training scripts
+├── docs/                # Local notes on models (ignored by Git)
+├── wiki/                # GitHub wiki sources
 └── README.md
 ```
 

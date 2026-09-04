@@ -1,5 +1,10 @@
 $ErrorActionPreference = "Stop"
 
+# Repo root (script lives in scripts/)
+$ROOT = Split-Path -Parent $PSScriptRoot
+Push-Location $ROOT
+try {
+
 # Configuration
 $NDK_PATH = $env:ANDROID_NDK_HOME
 if (-not $NDK_PATH) {
@@ -68,11 +73,11 @@ if (-not (Test-Path $LIBOMP_PATH)) {
 
 if ($LIBOMP_PATH -and (Test-Path $LIBOMP_PATH)) {
     Write-Host "Found libomp.so at $LIBOMP_PATH"
-    
+
     # Copy to artifacts
     Copy-Item $LIBOMP_PATH "$ARTIFACTS_DIR/release/" -Force
     Copy-Item $LIBOMP_PATH "$ARTIFACTS_DIR/debug/" -Force
-    
+
     # Copy to App jniLibs
     $APP_JNI_DIR = "app/android/app/src/main/jniLibs/arm64-v8a"
     if (-not (Test-Path $APP_JNI_DIR)) {
@@ -82,6 +87,10 @@ if ($LIBOMP_PATH -and (Test-Path $LIBOMP_PATH)) {
     Write-Host "libomp.so copied to $APP_JNI_DIR"
 } else {
     Write-Error "Could not find libomp.so in NDK. Please check NDK installation."
+}
+
+} finally {
+    Pop-Location
 }
 
 Write-Host "Build complete."

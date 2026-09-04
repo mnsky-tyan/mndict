@@ -23,6 +23,7 @@ app/build/
 *.txt
 *.md
 !README.md
+!AGENTS.md
 !**/README.md
 !app/analysis_options.yaml
 
@@ -30,6 +31,9 @@ app/build/
 # LOGS & TEMPORARY FILES
 # ============================================================
 *.log
+
+# Video-agent plugin scratch
+.video_agent/
 
 # ============================================================
 # LARGE MODEL FILES
@@ -108,3 +112,6 @@ Thumbs.db
 # ============================================================
 ui_prototype/
 
+
+# Local llama.cpp CLI binaries (downloaded release zips)
+llama-bin/

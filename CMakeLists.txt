@@ -22,6 +22,8 @@ set(GGML_METAL OFF CACHE BOOL "" FORCE)
 set(GGML_VULKAN OFF CACHE BOOL "" FORCE)
 set(LLAMA_CURL OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE) # Build llama.cpp statically
+# ARM KleidiAI i8mm/dotprod microkernels (FetchContent'd at configure time)
+set(GGML_CPU_KLEIDIAI ON CACHE BOOL "" FORCE)
 
 # Add llama.cpp
 add_subdirectory(llama.cpp)

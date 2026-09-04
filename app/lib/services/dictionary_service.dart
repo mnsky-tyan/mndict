@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import '../llama_isolate.dart';
-import '../model_downloader.dart';
-import '../app_settings.dart';
+import 'app_settings.dart';
+import 'llama_isolate.dart';
+import 'model_downloader.dart';
 
 class DictionaryService {
   final LlamaIsolate _llama = LlamaIsolate();
@@ -29,6 +29,17 @@ Synonyms: [Synonym 1], [Synonym 2]
 Antonyms: [Antonym 1], [Antonym 2]
 Do not use markdown formatting. Just plain text.
 """;
+
+  // Instruction carried in the system turn for the 2026 bake-off models:
+  // strict format + explicit permission to abstain (the honesty play).
+  static const String _dictionarySystemPrompt = "You are a dictionary assistant. Explain the given word, "
+      "phrase, idiom, or short sentence. Reply in exactly this format:\n"
+      "Definition: <definition>\n"
+      "Examples:\n- <example sentence>\n- <example sentence>\n"
+      "Synonyms: <comma-separated synonyms, or none>\n"
+      "Antonyms: <comma-separated antonyms, or none>\n"
+      "Plain text only, no markdown. "
+      "If you are not certain the entry exists, or you don't know it, reply only: I don't know.";
 
   DictionaryService(this.settings);
 
@@ -110,8 +121,10 @@ Do not use markdown formatting. Just plain text.
         "Define: $word<|im_end|>\n"
         "<|im_start|>assistant\n";
     } else if (config.promptStyle == PromptStyle.gemma) {
-      prompt = 
-        "<start_of_turn>user\n"
+      prompt =
+        // Gemma is BOS-sensitive: the <bos> token must start the prompt or
+        // the model can end generation immediately.
+        "<bos><start_of_turn>user\n"
         "Give a dictionary definition for the word: $word\n"
         "Include Definition, Examples, Synonyms, and Antonyms.<end_of_turn>\n"
         "<start_of_turn>model\n";
@@ -124,6 +137,43 @@ Do not use markdown formatting. Just plain text.
         "<|im_start|>user\n"
         "Define: $word /no_think<|im_end|>\n"
         "<|im_start|>assistant\n";
+    } else if (config.promptStyle == PromptStyle.lfm25) {
+      // LFM2.5: the GGUF's add_bos_token=true makes the tokenizer prepend
+      // <|startoftext|> — a literal BOS here would double it.
+      prompt =
+        "<|im_start|>system\n"
+        "$_dictionarySystemPrompt<|im_end|>\n"
+        "<|im_start|>user\n"
+        "$word<|im_end|>\n"
+        "<|im_start|>assistant\n";
+    } else if (config.promptStyle == PromptStyle.minicpm5) {
+      // MiniCPM5: GGUF add_bos_token=false, so the template's <s> is included
+      // literally. The empty <think> block is the model's own non-thinking
+      // form (its template injects exactly this when thinking is disabled).
+      prompt =
+        "<s><|im_start|>system\n"
+        "$_dictionarySystemPrompt<|im_end|>\n"
+        "<|im_start|>user\n"
+        "$word<|im_end|>\n"
+        "<|im_start|>assistant\n<think>\n\n</think>\n\n";
+    } else if (config.promptStyle == PromptStyle.nemotron3) {
+      // Nemotron 3: Qwen-style template, no BOS; empty think block disables
+      // its reasoning-by-default mode.
+      prompt =
+        "<|im_start|>system\n"
+        "$_dictionarySystemPrompt<|im_end|>\n"
+        "<|im_start|>user\n"
+        "$word<|im_end|>\n"
+        "<|im_start|>assistant\n<think></think>";
+    } else if (config.promptStyle == PromptStyle.gemma4) {
+      // Gemma-4 replaced <start_of_turn>/<end_of_turn> with <|turn>/<turn|>;
+      // it has no system role, so the instruction rides in the user turn.
+      // BOS <bos> is emitted unconditionally by the template.
+      prompt =
+        "<bos><|turn>user\n"
+        "$_dictionarySystemPrompt\n\n"
+        "$word<turn|>\n"
+        "<|turn>model\n";
     } else if (config.promptStyle == PromptStyle.phi) {
       prompt = 
         "<|user|>\n"
@@ -152,7 +202,15 @@ Do not use markdown formatting. Just plain text.
 
     // Listen to the isolate's stream directly for this request
     sub = _llama.tokenStream.listen((token) {
-      if (config.promptStyle == PromptStyle.qwen3) {
+      // Styles whose models may emit <think>...</think> spontaneously
+      // (LFM2.5-8B-A1B reasons by default; the others are safety nets).
+      const thinkingStyles = {
+        PromptStyle.qwen3,
+        PromptStyle.lfm25,
+        PromptStyle.minicpm5,
+        PromptStyle.nemotron3,
+      };
+      if (thinkingStyles.contains(config.promptStyle)) {
         if (token.contains("<think>")) {
           isThinking = true;
           // User requested to disable thinking process display by default
@@ -236,19 +294,25 @@ Do not use markdown formatting. Just plain text.
     final config = settings.currentModelConfig;
     String prompt;
 
-    if (config.promptStyle == PromptStyle.chatml) {
-      prompt = 
+    // The im_start/im_end turn structure is shared by chatml, LFM2.5,
+    // MiniCPM5 and Nemotron 3.
+    if (config.promptStyle == PromptStyle.chatml ||
+        config.promptStyle == PromptStyle.lfm25 ||
+        config.promptStyle == PromptStyle.minicpm5 ||
+        config.promptStyle == PromptStyle.nemotron3) {
+      prompt =
         "<|im_start|>system\n"
         "$systemMsg<|im_end|>\n"
         "<|im_start|>user\n"
         "$userMsg<|im_end|>\n"
         "<|im_start|>assistant\n";
-    } else if (config.promptStyle == PromptStyle.gemma) {
-      prompt = 
-        "<start_of_turn>user\n"
+    } else if (config.promptStyle == PromptStyle.gemma ||
+        config.promptStyle == PromptStyle.gemma4) {
+      final isGemma4 = config.promptStyle == PromptStyle.gemma4;
+      prompt =
+        "<bos>${isGemma4 ? '<|turn>user\n' : '<start_of_turn>user\n'}"
         "$systemMsg\n"
-        "$userMsg<end_of_turn>\n"
-        "<start_of_turn>model\n";
+        "$userMsg${isGemma4 ? '<turn|>\n<|turn>model\n' : '<end_of_turn>\n<start_of_turn>model\n'}";
     } else if (config.promptStyle == PromptStyle.phi) {
       prompt = 
         "<|user|>\n"
