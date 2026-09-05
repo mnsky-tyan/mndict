@@ -68,9 +68,13 @@ class LlamaIsolate {
     int seed = -1,
   }) async {
     if (_sendPort == null) throw Exception("Isolate not spawned");
+    // Round-trip: wait for the isolate's load result so callers can tell a
+    // real failure (e.g. corrupt/partial file) from an optimistic success.
+    final reply = ReceivePort();
     _sendPort!.send({
       'command': 'load',
       'path': modelPath,
+      'replyPort': reply.sendPort,
       'options': {
         'maxContextK': maxContextK,
         'threadCount': threadCount,
@@ -79,6 +83,10 @@ class LlamaIsolate {
         'seed': seed,
       }
     });
+    final result = await reply.first as int;
+    if (result != 0) {
+      throw Exception('Model load failed (code $result)');
+    }
   }
 
   Future<void> generate(String prompt, {
@@ -125,7 +133,8 @@ class LlamaIsolate {
           if (command == 'load') {
             final path = message['path'];
             final options = message['options'];
-            
+            int resultCode = 0;
+
             final result = await llama.loadModel(
               path,
               threads: options['threadCount'],
@@ -134,8 +143,12 @@ class LlamaIsolate {
               seed: options['seed'],
             );
             if (result != 0) {
+              resultCode = result;
               mainSendPort.send({'type': 'error', 'message': 'Failed to load model: $result'});
             }
+            // Report the real load outcome to the waiting caller.
+            final SendPort? replyPort = message['replyPort'] as SendPort?;
+            replyPort?.send(resultCode);
             
           } else if (command == 'generate') {
             final prompt = message['prompt'];

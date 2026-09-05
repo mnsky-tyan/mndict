@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'app_settings.dart';
 import 'llama_isolate.dart';
 import 'model_downloader.dart';
@@ -94,6 +95,15 @@ Do not use markdown formatting. Just plain text.
     } catch (e) {
       _statusStreamController.add("Failed to load model: $e");
       isModelLoaded = false;
+      // Self-heal: a corrupt/partial file fails native load every time it is
+      // selected. Delete it so the next attempt re-downloads.
+      try {
+        final f = File(path);
+        if (await f.exists()) {
+          await f.delete();
+          _statusStreamController.add("Corrupt model file deleted. Download it again.");
+        }
+      } catch (_) {}
     }
   }
 

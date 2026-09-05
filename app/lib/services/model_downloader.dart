@@ -23,12 +23,20 @@ class ModelDownloader {
 
   Future<void> downloadModel(String url, String filename, Function(double) onProgress) async {
     _cancelToken = CancelToken();
-    final savePath = await getModelPath(filename);
+    final finalPath = await getModelPath(filename);
+    // Download to a .part temp file: an interrupted transfer must never leave
+    // a partial file under the real name (it passes the existence check, then
+    // native model loading fails with a confusing "generation failed: -1").
+    final partPath = '$finalPath.part';
+    final partFile = File(partPath);
+    if (await partFile.exists()) {
+      await partFile.delete(); // start over, no resume
+    }
 
     try {
       await _dio.download(
         url,
-        savePath,
+        partPath,
         onReceiveProgress: (received, total) {
           if (total != -1) {
             onProgress(received / total);
@@ -36,7 +44,11 @@ class ModelDownloader {
         },
         cancelToken: _cancelToken,
       );
+      await partFile.rename(finalPath);
     } catch (e) {
+      if (await partFile.exists()) {
+        await partFile.delete();
+      }
       if (CancelToken.isCancel(e as DioException)) {
         print('Download cancelled');
       } else {
