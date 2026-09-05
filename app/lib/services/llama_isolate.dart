@@ -66,6 +66,7 @@ class LlamaIsolate {
     int maxTokens = 128,
     int loggingVerbosity = 1,
     int seed = -1,
+    String? draftPath,
   }) async {
     if (_sendPort == null) throw Exception("Isolate not spawned");
     // Round-trip: wait for the isolate's load result so callers can tell a
@@ -75,6 +76,7 @@ class LlamaIsolate {
       'command': 'load',
       'path': modelPath,
       'replyPort': reply.sendPort,
+      'draftPath': draftPath,
       'options': {
         'maxContextK': maxContextK,
         'threadCount': threadCount,
@@ -145,6 +147,13 @@ class LlamaIsolate {
             if (result != 0) {
               resultCode = result;
               mainSendPort.send({'type': 'error', 'message': 'Failed to load model: $result'});
+            } else {
+              // Optional speculative decoding: on failure fall back to
+              // normal generation silently (native log has the detail).
+              final draftPath = message['draftPath'] as String?;
+              if (draftPath != null) {
+                await llama.attachDraft(draftPath);
+              }
             }
             // Report the real load outcome to the waiting caller.
             final SendPort? replyPort = message['replyPort'] as SendPort?;

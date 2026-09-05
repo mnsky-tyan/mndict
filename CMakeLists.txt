@@ -24,6 +24,8 @@ set(LLAMA_CURL OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE) # Build llama.cpp statically
 # ARM KleidiAI i8mm/dotprod microkernels (FetchContent'd at configure time)
 set(GGML_CPU_KLEIDIAI ON CACHE BOOL "" FORCE)
+# common lib (speculative decoding helper for DSpark draft decoding)
+set(LLAMA_BUILD_COMMON ON CACHE BOOL "" FORCE)
 
 # Add llama.cpp
 add_subdirectory(llama.cpp)
@@ -32,14 +34,15 @@ add_subdirectory(llama.cpp)
 add_library(llama_native SHARED jni/native_api.cpp)
 
 # Include paths
-target_include_directories(llama_native PRIVATE 
+target_include_directories(llama_native PRIVATE
     artifacts/include
     llama.cpp/include
     llama.cpp/ggml/include
+    llama.cpp/common
 )
 
-# Link against llama (static)
-target_link_libraries(llama_native PRIVATE llama log)
+# Link against llama (static) + common (speculative decoding)
+target_link_libraries(llama_native PRIVATE llama llama-common log)
 
 # Rename output to libllama.so
 set_target_properties(llama_native PROPERTIES OUTPUT_NAME "llama")

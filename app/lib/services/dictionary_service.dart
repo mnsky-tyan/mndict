@@ -68,14 +68,39 @@ Do not use markdown formatting. Just plain text.
       if (!isModelLoaded || _currentModelPath != path) {
         await loadModel(path);
       }
+      // Speculative-decoding draft: fetch once in the background if missing.
+      _ensureDraftDownloaded();
     } else {
       _statusStreamController.add("Model not found. Please download in settings.");
       isModelLoaded = false;
     }
   }
 
+  Future<void> _ensureDraftDownloaded() async {
+    final config = settings.currentModelConfig;
+    final draftName = config.draftFilename;
+    if (draftName == null || config.draftUrl == null) return;
+    if (await _downloader.isModelDownloaded(draftName)) return;
+    _statusStreamController.add("Downloading draft model (${config.draftSizeMB} MB)...");
+    try {
+      await _downloader.downloadModel(config.draftUrl!, draftName, (_) {});
+      _statusStreamController.add("Draft model ready");
+    } catch (e) {
+      _statusStreamController.add("Draft download failed (decoding unaffected)");
+    }
+  }
+
+  Future<String?> _draftPathOrNull() async {
+    final config = settings.currentModelConfig;
+    final draftName = config.draftFilename;
+    if (draftName == null) return null;
+    if (!await _downloader.isModelDownloaded(draftName)) return null;
+    return _downloader.getModelPath(draftName);
+  }
+
   Future<void> loadModel(String path) async {
     _statusStreamController.add("Loading Model...");
+    final draftPath = await _draftPathOrNull();
     try {
       await _llama.loadModel(
         path,
@@ -83,6 +108,7 @@ Do not use markdown formatting. Just plain text.
         threadCount: settings.threadCount,
         maxTokens: 2048,
         loggingVerbosity: 1,
+        draftPath: draftPath,
       );
       isModelLoaded = true;
       _currentModelPath = path;

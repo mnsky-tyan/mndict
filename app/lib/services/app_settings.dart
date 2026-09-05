@@ -9,12 +9,21 @@ class ModelConfig {
   final PromptStyle promptStyle;
   final double sizeMB;
 
+  // Optional speculative-decoding draft model (downloaded alongside the main
+  // model when present).
+  final String? draftUrl;
+  final String? draftFilename;
+  final double draftSizeMB;
+
   const ModelConfig({
     required this.name,
     required this.url,
     required this.filename,
     required this.promptStyle,
     required this.sizeMB,
+    this.draftUrl,
+    this.draftFilename,
+    this.draftSizeMB = 0,
   });
 }
 
@@ -34,10 +43,14 @@ class AppSettings {
       // Local-LAN build served from the dev PC (training/out/); not a public URL.
       // Q4_0: 4.6x faster prefill + ~1.5x faster decode than Q4_K_M on-device
       // (KleidiAI i8mm path); promptStyle lfm25tuned = byte-exact training prompt.
+      // DSpark 296M draft: speculative decoding, measured +40% on desktop.
       url: 'http://192.168.0.116:8090/pilot-q40.gguf',
       filename: 'LFM2.5-Pilot-Q4_0.gguf',
       promptStyle: PromptStyle.lfm25tuned,
       sizeMB: 696,
+      draftUrl: 'http://192.168.0.116:8090/DSpark-Q8_0.gguf',
+      draftFilename: 'LFM2.5-DSpark-Q8_0.gguf',
+      draftSizeMB: 302,
     ),
     ModelConfig(
       name: 'LFM2.5 1.2B',

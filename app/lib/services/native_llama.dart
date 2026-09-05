@@ -10,6 +10,7 @@ typedef NativeGenerate = Int32 Function(Pointer<Void>, Pointer<Utf8>, NativeGene
 typedef NativeStreamNextToken = Int32 Function(Pointer<Void>, Pointer<Pointer<Utf8>>);
 typedef NativeFreeModel = Void Function(Pointer<Void>);
 typedef NativeGetRamEstimate = Int32 Function(Pointer<Utf8>, Pointer<Uint64>);
+typedef NativeAttachDraft = Int32 Function(Pointer<Void>, Pointer<Utf8>, Int32);
 
 // Dart function signatures
 typedef InitModel = int Function(Pointer<Utf8>, NativeInitOptions, Pointer<Pointer<Void>>);
@@ -17,6 +18,7 @@ typedef Generate = int Function(Pointer<Void>, Pointer<Utf8>, NativeGenerateOpti
 typedef StreamNextToken = int Function(Pointer<Void>, Pointer<Pointer<Utf8>>);
 typedef FreeModel = void Function(Pointer<Void>);
 typedef GetRamEstimate = int Function(Pointer<Utf8>, Pointer<Uint64>);
+typedef AttachDraft = int Function(Pointer<Void>, Pointer<Utf8>, int);
 
 // Structs
 final class NativeInitOptions extends Struct {
@@ -48,6 +50,7 @@ class LlamaNative {
   late StreamNextToken _streamNextToken;
   late FreeModel _freeModel;
   late GetRamEstimate _getRamEstimate;
+  late AttachDraft _attachDraft;
 
   Pointer<Void> _modelHandle = nullptr;
 
@@ -64,10 +67,11 @@ class LlamaNative {
     _streamNextToken = _lib.lookupFunction<NativeStreamNextToken, StreamNextToken>('llama_native_stream_next_token');
     _freeModel = _lib.lookupFunction<NativeFreeModel, FreeModel>('llama_native_free_model');
     _getRamEstimate = _lib.lookupFunction<NativeGetRamEstimate, GetRamEstimate>('llama_native_get_required_ram_estimate');
+    _attachDraft = _lib.lookupFunction<NativeAttachDraft, AttachDraft>('llama_native_attach_draft');
   }
 
   Future<int> loadModel(String modelPath, {
-    int threads = 4, 
+    int threads = 4,
     double contextSizeK = 2.0,
     int loggingVerbosity = 0,
     int seed = -1,
@@ -79,7 +83,7 @@ class LlamaNative {
 
     final pathPtr = modelPath.toNativeUtf8();
     final handlePtr = calloc<Pointer<Void>>();
-    
+
     // Create options struct using calloc to ensure memory is allocated
     final optionsPtr = calloc<NativeInitOptions>();
     optionsPtr.ref.thread_count = threads;
@@ -97,6 +101,18 @@ class LlamaNative {
       calloc.free(pathPtr);
       calloc.free(handlePtr);
       calloc.free(optionsPtr);
+    }
+  }
+
+  /// Attach a speculative-decoding draft model. Optional: on failure the
+  /// handle keeps working in normal mode.
+  Future<int> attachDraft(String draftPath, {int nDraftMax = 8}) async {
+    if (_modelHandle == nullptr) return -1;
+    final pathPtr = draftPath.toNativeUtf8();
+    try {
+      return _attachDraft(_modelHandle, pathPtr, nDraftMax);
+    } finally {
+      calloc.free(pathPtr);
     }
   }
 

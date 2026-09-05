@@ -48,6 +48,18 @@ typedef void* llama_native_handle;
 int32_t llama_native_init_model(const char* model_path, llama_native_init_options options, llama_native_handle* handle_out);
 
 /**
+ * Attach a speculative-decoding draft model to an initialized handle.
+ * Optional: without a draft the handle generates normally. On failure the
+ * handle stays usable in non-speculative mode.
+ *
+ * @param handle The model handle.
+ * @param draft_path Absolute path to the draft GGUF file.
+ * @param n_draft_max Max tokens drafted per round (e.g. 8).
+ * @return LLAMA_NATIVE_SUCCESS on success, or an error code.
+ */
+int32_t llama_native_attach_draft(llama_native_handle handle, const char* draft_path, int32_t n_draft_max);
+
+/**
  * Start generating text for the given prompt.
  * This function prepares the generation but does not block until completion.
  * Use llama_native_stream_next_token to retrieve tokens.
