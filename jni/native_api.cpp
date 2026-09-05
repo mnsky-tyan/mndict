@@ -7,19 +7,25 @@
 #include <mutex>
 #include <cstring>
 #include <iostream>
+#include <chrono>
 #include <android/log.h>
 
 struct NativeModel {
     llama_model* model = nullptr;
     llama_context* ctx = nullptr;
     llama_sampler* sampler = nullptr;
-    
+
     std::vector<llama_token> tokens_list;
     int32_t n_past = 0;
     int32_t n_remain = 0;
-    
+
     // Buffer for the current token text to ensure pointer validity
     std::string current_token_text;
+
+    // Decode-speed accounting (one summary log per generation)
+    std::chrono::steady_clock::time_point gen_start;
+    int32_t gen_tokens = 0;
+    bool summary_logged = false;
 };
 
 static std::once_flag flag_backend_init;
@@ -28,6 +34,17 @@ static void ensure_backend_init() {
     std::call_once(flag_backend_init, []() {
         llama_backend_init();
     });
+}
+
+// One summary per generation, on whichever EOF path ends it first.
+static void log_decode_summary(NativeModel* native_model) {
+    if (native_model->summary_logged) return;
+    native_model->summary_logged = true;
+    const auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - native_model->gen_start).count();
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Decode summary: %d tokens in %lld ms (%.1f tok/s)",
+                        native_model->gen_tokens, (long long)elapsed_ms,
+                        elapsed_ms > 0 ? native_model->gen_tokens * 1000.0 / elapsed_ms : 0.0);
 }
 
 int32_t llama_native_init_model(const char* model_path, llama_native_init_options options, llama_native_handle* handle_out) {
@@ -41,7 +58,10 @@ int32_t llama_native_init_model(const char* model_path, llama_native_init_option
     __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Options: threads=%d, context_k=%f", options.thread_count, options.max_context_k);
 
     llama_model_params model_params = llama_model_default_params();
-    model_params.load_mode = LLAMA_LOAD_MODE_MMAP; // Explicitly enable mmap for lower latency
+    // MMAP + MLOCK: mmap alone lets Android evict model pages under RAM
+    // pressure, and each evicted page re-reads from flash mid-decode (measured
+    // ~10x slowdown on a Xiaomi 14T). MLOCK pins the pages in RAM.
+    model_params.load_mode = LLAMA_LOAD_MODE_MMAP_MLOCK;
     // model_params.n_gpu_layers = 0; // CPU only
     
     llama_model* model = llama_model_load_from_file(model_path, model_params);
@@ -197,6 +217,9 @@ int32_t llama_native_generate(llama_native_handle handle, const char* prompt, ll
     // Update n_past by adding the number of tokens we just processed
     native_model->n_past += prompt_tokens.size();
     native_model->n_remain = options.max_tokens;
+    native_model->gen_start = std::chrono::steady_clock::now();
+    native_model->gen_tokens = 0;
+    native_model->summary_logged = false;
     
     __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Generation setup complete. New n_past: %d, n_remain: %d", native_model->n_past, native_model->n_remain);
 
@@ -213,6 +236,7 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
 
     if (native_model->n_remain <= 0) {
         __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Hit token limit (n_remain <= 0)");
+        log_decode_summary(native_model);
         return LLAMA_NATIVE_EOF;
     }
 
@@ -227,6 +251,7 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
     // Check for EOS
     if (llama_vocab_is_eog(vocab, new_token_id)) {
         __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Hit EOS token");
+        log_decode_summary(native_model);
         native_model->n_remain = 0;
         return LLAMA_NATIVE_EOF;
     }
@@ -242,8 +267,12 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
     }
     
     *token_text_out = native_model->current_token_text.c_str();
-    
+
+    // Per-token logcat writes cost ~10-30ms each on MIUI logd and dominated
+    // decode time. Define LLAMA_NATIVE_VERBOSE to restore them for debugging.
+#ifdef LLAMA_NATIVE_VERBOSE
     __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Generated token: '%s' (id: %d)", *token_text_out, new_token_id);
+#endif
 
     // Check for stop strings (hallucinations/next turn markers)
     // Check for stop strings (hallucinations/next turn markers)
@@ -260,6 +289,7 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
         strstr(text, "<lend-header-idl>") || strstr(text, "idl>")) {
         
         __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Stop string detected: %s. Stopping generation.", text);
+        log_decode_summary(native_model);
         native_model->n_remain = 0;
         return LLAMA_NATIVE_EOF;
     }
@@ -276,7 +306,8 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
     
     native_model->n_past += 1;
     native_model->n_remain -= 1;
-    
+    native_model->gen_tokens += 1;
+
     llama_batch_free(batch);
 
     return LLAMA_NATIVE_SUCCESS;

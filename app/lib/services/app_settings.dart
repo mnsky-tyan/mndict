@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum PromptStyle { llama3, chatml, gemma, qwen3, phi, lfm25, gemma4, minicpm5, nemotron3 }
+enum PromptStyle { llama3, chatml, gemma, qwen3, phi, lfm25, lfm25tuned, gemma4, minicpm5, nemotron3 }
 
 class ModelConfig {
   final String name;
@@ -29,6 +29,16 @@ class AppSettings {
 
   static const List<ModelConfig> availableModels = [
     // --- 2026-09 model bake-off candidates (docs/on-device-llm-research-2026-09.md) ---
+    ModelConfig(
+      name: 'LFM2.5 1.2B PILOT (LoRA Q4_0)',
+      // Local-LAN build served from the dev PC (training/out/); not a public URL.
+      // Q4_0: 4.6x faster prefill + ~1.5x faster decode than Q4_K_M on-device
+      // (KleidiAI i8mm path); promptStyle lfm25tuned = byte-exact training prompt.
+      url: 'http://192.168.0.116:8090/pilot-q40.gguf',
+      filename: 'LFM2.5-Pilot-Q4_0.gguf',
+      promptStyle: PromptStyle.lfm25tuned,
+      sizeMB: 696,
+    ),
     ModelConfig(
       name: 'LFM2.5 1.2B',
       url: 'https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/resolve/main/LFM2.5-1.2B-Instruct-Q4_K_M.gguf',

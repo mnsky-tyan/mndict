@@ -152,6 +152,20 @@ Do not use markdown formatting. Just plain text.
         "each meaning, and Synonyms/Antonyms lines each formatted as: "
         "word - short gloss.<|im_end|>\n"
         "<|im_start|>assistant\n";
+    } else if (config.promptStyle == PromptStyle.lfm25tuned) {
+      // Byte-exact match with the LoRA pilot's training prompt
+      // (training/train_pilot.py SYSTEM_PROMPT): persona + None policy only,
+      // bare headword — the format itself is baked into the weights.
+      const tunedSystem =
+          "You are a dictionary assistant. Explain the given word, phrase, "
+          "idiom, or short sentence as a dictionary entry. If the headword is "
+          "not a real English word or phrase, reply only: None.";
+      prompt =
+        "<|im_start|>system\n"
+        "$tunedSystem<|im_end|>\n"
+        "<|im_start|>user\n"
+        "$word<|im_end|>\n"
+        "<|im_start|>assistant\n";
     } else if (config.promptStyle == PromptStyle.minicpm5) {
       // MiniCPM5: GGUF add_bos_token=false, so the template's <s> is included
       // literally. The empty <think> block is the model's own non-thinking
@@ -197,8 +211,6 @@ Do not use markdown formatting. Just plain text.
         "<|start_header_id|>assistant<|end_header_id|>\n\n";
     }
 
-    print("DEBUG: Prompt length: ${prompt.length}");
-    print("DEBUG: Prompt content: $prompt");
 
     StreamSubscription? sub;
     StreamSubscription? statusSub;
@@ -239,17 +251,14 @@ Do not use markdown formatting. Just plain text.
       }
       
       // Stream directly to UI
-      print("DEBUG: Token received: '$token'");
       _tokenStreamController.add(token);
     }, onError: (e) {
-      print("DEBUG: Token stream error: $e");
       _tokenStreamController.addError(e);
       if (!completer.isCompleted) completer.complete(); // Stop waiting on error
     });
 
     // Listen for completion or error
     statusSub = _llama.statusStream.listen((status) {
-      print("DEBUG: Status received: '$status'");
       if (status == LlamaStatus.done || status == LlamaStatus.error) {
         if (!completer.isCompleted) completer.complete();
       }
