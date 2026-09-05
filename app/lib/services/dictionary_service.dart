@@ -79,7 +79,7 @@ Do not use markdown formatting. Just plain text.
   Future<void> _ensureDraftDownloaded() async {
     final config = settings.currentModelConfig;
     final draftName = config.draftFilename;
-    if (draftName == null || config.draftUrl == null) return;
+    if (!config.specDecoding || draftName == null || config.draftUrl == null) return;
     if (await _downloader.isModelDownloaded(draftName)) return;
     _statusStreamController.add("Downloading draft model (${config.draftSizeMB} MB)...");
     try {
@@ -93,7 +93,7 @@ Do not use markdown formatting. Just plain text.
   Future<String?> _draftPathOrNull() async {
     final config = settings.currentModelConfig;
     final draftName = config.draftFilename;
-    if (draftName == null) return null;
+    if (!config.specDecoding || draftName == null) return null;
     if (!await _downloader.isModelDownloaded(draftName)) return null;
     return _downloader.getModelPath(draftName);
   }

@@ -26,10 +26,21 @@ struct NativeModel {
     llama_context* ctx_dft = nullptr;
     int32_t n_draft_max = 8;
     int32_t thread_count = 4;
-    llama_tokens spec_prompt;                // full token history for the drafter
+    llama_tokens spec_prompt;                // token history for the drafter (excludes id_last)
     llama_token id_last = 0;                 // token not yet fed to the target KV
     std::deque<llama_token> pending;         // accepted tokens awaiting emission
+    bool gen_done = false;                   // round hit EOG; drain pending then EOF
     bool spec_active = false;
+
+    // Partial-acceptance handling. The target model (LFM2.5 hybrid GDN+attn)
+    // cannot seq_rm, so rejected draft cells cannot be rewound in place.
+    // Upstream answer (speculative-simple): snapshot the target state before
+    // verification and restore it on partial acceptance; the accepted prefix
+    // is then re-verified next round (draft_reverify).
+    common_prompt_checkpoint ckpt;
+    llama_tokens draft_reverify;
+    bool use_ckpt_tgt = false;
+    int partial_streak = 0;
 
     int32_t n_past = 0;
     int32_t n_remain = 0;
@@ -45,8 +56,19 @@ struct NativeModel {
 
 static std::once_flag flag_backend_init;
 
+// Route llama.cpp/ggml internal logs to logcat (tag "llama.cpp") so spec/draft
+// warnings are visible during on-device debugging.
+static void native_log_callback(ggml_log_level level, const char* text, void* user_data) {
+    (void) user_data;
+    const android_LogPriority prio =
+        level == GGML_LOG_LEVEL_ERROR ? ANDROID_LOG_ERROR :
+        level == GGML_LOG_LEVEL_WARN  ? ANDROID_LOG_WARN  : ANDROID_LOG_INFO;
+    __android_log_print(prio, "llama.cpp", "%s", text);
+}
+
 static void ensure_backend_init() {
     std::call_once(flag_backend_init, []() {
+        llama_log_set(native_log_callback, nullptr);
         llama_backend_init();
     });
 }
@@ -133,8 +155,21 @@ int32_t llama_native_attach_draft(llama_native_handle handle, const char* draft_
     params.speculative.draft.mparams.path = draft_path;
     params.speculative.draft.n_max = n_draft_max > 0 ? n_draft_max : 8;
     params.speculative.draft.n_min = 0;
+    // init_from_params maps ctx_dft threads from the top-level cpuparams; a
+    // default-constructed params carries n_threads = -1, which creates a draft
+    // context whose decodes all fail.
+    params.cpuparams.n_threads = native_model->thread_count;
+    params.cpuparams_batch.n_threads = native_model->thread_count;
     params.speculative.draft.cpuparams.n_threads = native_model->thread_count;
     params.speculative.draft.cpuparams_batch.n_threads = native_model->thread_count;
+    // The draft block decode samples every position of [id_last, mask...] in
+    // one pass (backend-attached samplers), so the draft context must allow
+    // n_max+1 outputs per sequence. Upstream tools get this from
+    // common_base_params_to_speculative; a default params has 1, which fails
+    // every draft decode with "backend sampling supports at most 1 outputs".
+    const int32_t n_outputs_per_seq = (n_draft_max > 0 ? n_draft_max : 8) + 1;
+    params.n_outputs_max = n_outputs_per_seq;
+    params.n_outputs_max_per_seq = n_outputs_per_seq;
 
     // Prefer the implementation the draft GGUF was made for; fall back to a
     // plain greedy draft model.
@@ -143,6 +178,14 @@ int32_t llama_native_attach_draft(llama_native_handle handle, const char* draft_
         types = { COMMON_SPECULATIVE_TYPE_DRAFT_DSPARK, COMMON_SPECULATIVE_TYPE_DRAFT_SIMPLE };
     }
     params.speculative.types = types;
+    {
+        std::string types_str;
+        for (auto t : types) {
+            if (!types_str.empty()) types_str += ",";
+            types_str += common_speculative_type_to_str(t);
+        }
+        __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Speculative types: %s", types_str.c_str());
+    }
 
     auto spec_init = common_speculative_init_from_params(params, native_model->model, native_model->ctx);
     if (!spec_init || !spec_init->model() || !spec_init->context()) {
@@ -166,6 +209,13 @@ int32_t llama_native_attach_draft(llama_native_handle handle, const char* draft_
     native_model->ctx_dft = ctx_dft;
     native_model->n_draft_max = params.speculative.draft.n_max;
     native_model->spec_active = true;
+    // can_seq_rm probes the memory with a 2-token decode; safe here, the
+    // context is idle and every generate() clears the KV anyway. FULL means
+    // the memory cannot remove ranges -> checkpoints are required.
+    native_model->use_ckpt_tgt =
+        common_context_can_seq_rm(native_model->ctx) == COMMON_CONTEXT_SEQ_RM_TYPE_FULL;
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Target checkpoint mode: %s",
+                        native_model->use_ckpt_tgt ? "on (memory cannot seq_rm)" : "off (seq_rm supported)");
 
     __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Speculative decoding active (n_draft_max=%d)",
                         native_model->n_draft_max);
@@ -196,6 +246,9 @@ int32_t llama_native_generate(llama_native_handle handle, const char* prompt, ll
     native_model->n_past = 0;
     native_model->n_remain = 0;
     native_model->pending.clear();
+    native_model->draft_reverify.clear();
+    native_model->ckpt.clear();
+    native_model->partial_streak = 0;
 
     // Clear KV cache to prevent position conflicts
     llama_memory_t mem = llama_get_memory(native_model->ctx);
@@ -277,8 +330,11 @@ int32_t llama_native_generate(llama_native_handle handle, const char* prompt, ll
 
     native_model->n_past = n_feed;
     native_model->id_last = prompt_tokens.back();
-    native_model->spec_prompt = prompt_tokens;
+    // Upstream keeps the drafter's prompt view excluding id_last; each round
+    // appends the previous id_last as tokens are accepted.
+    native_model->spec_prompt.assign(prompt_tokens.begin(), prompt_tokens.end() - 1);
     native_model->n_remain = options.max_tokens;
+    native_model->gen_done = false;
     native_model->gen_start = std::chrono::steady_clock::now();
     native_model->gen_tokens = 0;
     native_model->summary_logged = false;
@@ -295,23 +351,55 @@ int32_t llama_native_generate(llama_native_handle handle, const char* prompt, ll
 
 // Run one speculative round: draft from the draft model, verify with the
 // target, and queue the accepted tokens. Returns false on decode failure.
+//
+// Mirrors examples/speculative-simple, including the checkpoint path for the
+// target model: LFM2.5's hybrid memory cannot seq_rm, so a partial acceptance
+// restores the target from the pre-round snapshot and the accepted prefix is
+// re-verified next round instead of being rewound in place.
 static bool spec_round(NativeModel* nm) {
-    llama_tokens draft;
-    const int32_t n_ctx = (int32_t) llama_n_ctx(nm->ctx);
-    int32_t n_cap = nm->n_draft_max;
-    n_cap = std::min(n_cap, n_ctx - nm->n_past - 2);
-    n_cap = std::min(n_cap, nm->n_remain - 1);
-    n_cap = std::max(n_cap, 0);
-
-    common_speculative_get_draft_params(nm->spec, 0) = {
-        /* .drafting = */ true,
-        /* .n_max    = */ n_cap,
-        /* .n_past   = */ nm->n_past,
-        /* .id_last  = */ nm->id_last,
-        /* .prompt   = */ &nm->spec_prompt,
-        /* .result   = */ &draft,
+    auto pos_max = [](llama_memory_t mem) {
+        return (int) llama_memory_seq_pos_max(mem, 0);
     };
-    common_speculative_draft(nm->spec);
+    llama_memory_t mem_tgt = llama_get_memory(nm->ctx);
+    llama_memory_t mem_dft = llama_get_memory(nm->ctx_dft);
+
+    llama_tokens draft;
+
+    if (nm->draft_reverify.empty()) {
+        // Fresh draft round: snapshot bookkeeping, draft, and reset the draft
+        // KV so the verification injection stays contiguous.
+        nm->ckpt.update_pos((int64_t) nm->spec_prompt.size(),
+                            (llama_pos) llama_memory_seq_pos_min(mem_tgt, 0),
+                            (llama_pos) pos_max(mem_tgt));
+
+        const int32_t n_ctx = (int32_t) llama_n_ctx(nm->ctx);
+        int32_t n_cap = nm->n_draft_max;
+        n_cap = std::min(n_cap, n_ctx - nm->n_past - 2);
+        n_cap = std::min(n_cap, nm->n_remain - 1);
+        n_cap = std::max(n_cap, 0);
+
+        common_speculative_get_draft_params(nm->spec, 0) = {
+            /* .drafting = */ true,
+            /* .n_max    = */ n_cap,
+            /* .n_past   = */ nm->n_past,
+            /* .id_last  = */ nm->id_last,
+            /* .prompt   = */ &nm->spec_prompt,
+            /* .result   = */ &draft,
+        };
+        common_speculative_draft(nm->spec);
+
+        if (!draft.empty() && nm->use_ckpt_tgt) {
+            nm->ckpt.update_tgt(nm->ctx, 0, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY);
+        }
+
+        // The draft block decode parked its tokens at [n_past, ...) in the
+        // draft KV - the draft memory supports seq_rm, unlike the target.
+        llama_memory_seq_rm(mem_dft, 0, nm->ckpt.pos_max + 1, -1);
+    } else {
+        // Re-verify round: replay the accepted prefix from the restored state.
+        draft = std::move(nm->draft_reverify);
+        nm->draft_reverify.clear();
+    }
 
     llama_batch batch = llama_batch_init(1 + draft.size(), 0, 1);
     llama_batch_add(batch, nm->id_last, nm->n_past++, { 0 }, true);
@@ -330,29 +418,62 @@ static bool spec_round(NativeModel* nm) {
     }
     llama_batch_free(batch);
 
+    const size_t n_draft = draft.size();
+
+    // Sampler state as of before verification - partial acceptance replays
+    // the round with the restored state, so the resampled tokens must match.
+    common_sampler_ptr smpl_save;
+    if (nm->use_ckpt_tgt) {
+        smpl_save.reset(common_sampler_clone(nm->smpl));
+    }
+
     auto ids = common_sampler_sample_and_accept_n(nm->smpl, nm->ctx, draft);
     GGML_ASSERT(!ids.empty());
 
-    const int32_t k = (int32_t) ids.size();
-    common_speculative_accept(nm->spec, 0, k - 1);
-    nm->n_past += k - 1;
-    if ((int32_t) draft.size() >= k) {
-        // Partial acceptance: the target fed rejected draft tokens past the
-        // accepted prefix - rewind both KV caches to the last valid position
-        // (positions [n_past, ...) hold rejected drafts).
-        llama_memory_seq_rm(llama_get_memory(nm->ctx), 0, nm->n_past, -1);
-        if (nm->ctx_dft) {
-            llama_memory_seq_rm(llama_get_memory(nm->ctx_dft), 0, nm->n_past, -1);
+    if (nm->use_ckpt_tgt && ids.size() - 1 < n_draft) {
+        // Partial acceptance: rewind via checkpoint, re-verify next round.
+        nm->partial_streak++;
+        if (nm->partial_streak > 16) {
+            __android_log_print(ANDROID_LOG_ERROR, "LlamaNative", "speculative re-verify stuck");
+            return false;
         }
+        nm->draft_reverify = std::move(ids);
+        nm->ckpt.load_tgt(nm->ctx, 0, LLAMA_STATE_SEQ_FLAGS_PARTIAL_ONLY);
+        // Restore replaced the whole sequence; the range removal is a no-op
+        // on memories that support it and on those that do not.
+        llama_memory_seq_rm(mem_tgt, 0, nm->ckpt.pos_max + 1, -1);
+        llama_memory_seq_rm(mem_dft, 0, nm->ckpt.pos_max + 1, -1);
+        nm->spec_prompt.resize(nm->ckpt.n_tokens);
+        if (smpl_save) {
+            common_sampler_free(nm->smpl);
+            nm->smpl = smpl_save.release();
+        }
+        nm->n_past = (int32_t) nm->spec_prompt.size();
+        __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "spec partial: %d/%d accepted, rewound to %d (tgt max %d)",
+                            (int32_t) nm->draft_reverify.size() - 1, (int32_t) n_draft, nm->n_past, pos_max(mem_tgt));
+        return true;
     }
+    nm->partial_streak = 0;
 
-    for (int32_t i = 1; i < k; ++i) {
+    common_speculative_accept(nm->spec, 0, (int32_t) ids.size() - 1);
+    nm->n_past += (int32_t) ids.size() - 1;
+
+    const llama_vocab* vocab = llama_model_get_vocab(nm->model);
+    for (size_t i = 0; i < ids.size(); ++i) {
+        nm->spec_prompt.push_back(nm->id_last);
+        nm->id_last = ids[i];
+        if (llama_vocab_is_eog(vocab, nm->id_last)) {
+            nm->gen_done = true;
+            break;
+        }
         nm->pending.push_back(ids[i]);
     }
-    nm->id_last = ids[k - 1];
-    for (int32_t i = 0; i < k; ++i) {
-        nm->spec_prompt.push_back(ids[i]);
-    }
+
+    llama_memory_seq_rm(mem_tgt, 0, nm->n_past, -1);
+    llama_memory_seq_rm(mem_dft, 0, nm->n_past, -1);
+
+    __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "spec round: accepted %d/%d, +%d tokens (tgt max %d)",
+                        (int32_t) ids.size() - 1, (int32_t) n_draft, (int32_t) ids.size(), pos_max(mem_tgt));
     return true;
 }
 
@@ -388,9 +509,16 @@ int32_t llama_native_stream_next_token(llama_native_handle handle, const char** 
         return LLAMA_NATIVE_EOF;
     }
 
-    if (native_model->pending.empty()) {
+    // A partial-acceptance round leaves pending empty by design (the accepted
+    // prefix is re-verified next round), so loop until tokens are available.
+    while (native_model->pending.empty()) {
+        if (native_model->gen_done) {
+            log_decode_summary(native_model);
+            return LLAMA_NATIVE_EOF;
+        }
         bool ok = native_model->spec ? spec_round(native_model) : plain_round(native_model);
         if (!ok) {
+            log_decode_summary(native_model);
             return LLAMA_NATIVE_ERR_UNKNOWN;
         }
     }

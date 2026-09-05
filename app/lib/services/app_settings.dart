@@ -10,7 +10,12 @@ class ModelConfig {
   final double sizeMB;
 
   // Optional speculative-decoding draft model (downloaded alongside the main
-  // model when present).
+  // model when present). Opt-in via specDecoding: the base-distilled DSpark
+  // draft accepts only ~30% on structured dictionary entries, which measured
+  // SLOWER than plain decode on desktop (32.1 vs 45.6 t/s) and on device
+  // (10.4 vs 36.8 t/s). Re-enable per model once a draft is distilled on the
+  // tuned model.
+  final bool specDecoding;
   final String? draftUrl;
   final String? draftFilename;
   final double draftSizeMB;
@@ -21,6 +26,7 @@ class ModelConfig {
     required this.filename,
     required this.promptStyle,
     required this.sizeMB,
+    this.specDecoding = false,
     this.draftUrl,
     this.draftFilename,
     this.draftSizeMB = 0,
@@ -140,7 +146,11 @@ class AppSettings {
   
   // New Settings
   int _coins = 0;
-  double _temperature = 0.8;
+  // Greedy by default: dictionary entries should be deterministic, and
+  // speculative decoding accepts drafts against the sampled token - sampling
+  // at temperature > 0 collapses the draft acceptance rate (measured on
+  // device 2026-09-05: ~11 t/s at temp 0.8 vs 36.8 t/s plain decode).
+  double _temperature = 0.0;
   double _topP = 0.95;
   int _topK = 40;
 
@@ -167,8 +177,7 @@ class AppSettings {
     _selectedModelFilename = _prefs.getString(_keySelectedModel) ?? availableModels.first.filename;
     
     _coins = _prefs.getInt(_keyCoins) ?? 0;
-    _temperature = _prefs.getDouble(_keyTemperature) ?? 0.8;
-    _topP = _prefs.getDouble(_keyTopP) ?? 0.95;
+    _temperature = _prefs.getDouble(_keyTemperature) ?? 0.0;
     _topP = _prefs.getDouble(_keyTopP) ?? 0.95;
     _topK = _prefs.getInt(_keyTopK) ?? 40;
     _threadCount = _prefs.getInt(_keyThreadCount) ?? 4;
