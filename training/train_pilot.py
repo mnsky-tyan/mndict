@@ -151,7 +151,6 @@ def main():
         gradient_accumulation_steps=4,
         learning_rate=1.5e-4,
         lr_scheduler_type="cosine",
-        warmup_ratio=0.05,
         logging_steps=5,
         save_strategy="no",
         bf16=(device != "cpu"),
