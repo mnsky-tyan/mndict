@@ -1,0 +1,187 @@
+{
+  "meta": {
+    "description": "mndict LoRA pilot dataset v1 (2026-09-05). Schema-first: train script renders each entry into the exact LFM2.5 runtime prompt/entry format. Composition: 56 entries - 25 common (multi-sense represented), 8 idioms, 5 phrases, 8 rare-but-real (anti-coward set), 10 nonwords (None).",
+    "format_contract": {
+      "entry": "headword line, blank line, 'Part of speech: X', blank, 'Meanings:', blank, one or more 'Meaning N (label):' blocks each with definition line, 'Example:', bullet sentences, blank, 'Synonyms:' bullets 'word - gloss', blank, 'Antonyms:' bullets",
+      "abstain": "exactly: None",
+      "none_rule": "if a word genuinely has no synonyms/antonyms, the section contains the single bullet '* none'"
+    }
+  },
+  "entries": [
+    {"word": "revolve", "pos": "verb", "meanings": [
+      {"label": "physical", "definition": "To move in a circle around a central point or axis.", "examples": ["The Earth revolves around the Sun.", "The wheels revolved smoothly as the car moved."]},
+      {"label": "figurative", "definition": "To center on or be mainly concerned with something.", "examples": ["The discussion revolved around climate change.", "His whole life revolves around work."]}
+    ], "synonyms": [["rotate", "turn around an axis"], ["orbit", "move around a central point"], ["spin", "turn rapidly"]], "antonyms": [["remain still", "not move"], ["stagnate", "fail to change or move"]]},
+    {"word": "window", "pos": "noun", "meanings": [
+      {"label": "opening", "definition": "An opening in a wall or roof, fitted with glass, that lets light and air into a building.", "examples": ["She opened the window to let in the breeze.", "The window is covered with frost."]},
+      {"label": "opportunity", "definition": "A short period of time during which something is possible.", "examples": ["We have a small window to catch the flight.", "The launch window opens at dawn."]}
+    ], "synonyms": [["opening", "a gap or aperture"], ["porthole", "a small round window"]], "antonyms": [["none"]]},
+    {"word": "ephemeral", "pos": "adjective", "meanings": [
+      {"label": "short-lived", "definition": "Lasting for a very short time.", "examples": ["Fame on the internet is often ephemeral.", "Cherry blossoms are ephemeral, gone within a week."]}
+    ], "synonyms": [["fleeting", "passing quickly"], ["transient", "not lasting long"], ["momentary", "lasting a moment"]], "antonyms": [["permanent", "lasting indefinitely"], ["enduring", "lasting over time"]]},
+    {"word": "threshold", "pos": "noun", "meanings": [
+      {"label": "doorway", "definition": "The strip of wood or stone at the bottom of a doorway.", "examples": ["He paused on the threshold of the old house.", "Wipe your feet on the threshold."]},
+      {"label": "limit", "definition": "The level or point at which something starts to happen or change.", "examples": ["The pain threshold differs from person to person.", "Sales crossed the million-dollar threshold."]}
+    ], "synonyms": [["doorstep", "the step before a door"], ["brink", "the edge of a limit"]], "antonyms": [["interior", "the far side of an entrance"]]},
+    {"word": "murmur", "pos": "verb", "meanings": [
+      {"label": "soft speech", "definition": "To say something in a quiet, low voice that is hard to hear.", "examples": ["She murmured an apology and looked away.", "The crowd murmured in agreement."]},
+      {"label": "continuous sound", "definition": "To make a low, steady, indistinct sound.", "examples": ["A stream murmured through the valley.", "The audience murmured before the show began."]}
+    ], "synonyms": [["mumble", "speak unclearly and quietly"], ["whisper", "speak very softly"], ["ripple", "make a gentle sound"]], "antonyms": [["shout", "speak very loudly"], ["silence", "make no sound at all"]]},
+    {"word": "puddle", "pos": "noun", "meanings": [
+      {"label": "small pool", "definition": "A small pool of water, especially rainwater, on the ground.", "examples": ["Children jumped in every puddle after the rain.", "A puddle formed under the leaking umbrella."]}
+    ], "synonyms": [["pool", "a small body of water"], ["sprinkle", "a light splash of liquid"]], "antonyms": [["none"]]},
+    {"word": "courage", "pos": "noun", "meanings": [
+      {"label": "bravery", "definition": "The ability to do something that frightens you.", "examples": ["It took courage to speak against the crowd.", "She showed great courage during the storm."]}
+    ], "synonyms": [["bravery", "fearless behavior"], ["valor", "courage in danger"], ["grit", "determined courage"]], "antonyms": [["cowardice", "lack of courage"], ["fear", "the feeling of being afraid"]]},
+    {"word": "saffron", "pos": "noun", "meanings": [
+      {"label": "spice", "definition": "Orange-yellow stigmas of a crocus, used to color and flavor food.", "examples": ["The rice was perfumed with saffron.", "Saffron is the most expensive spice in the world."]},
+      {"label": "color", "definition": "A deep orange-yellow color.", "examples": ["Monks wore saffron robes.", "The sunset turned the sky saffron."]}
+    ], "synonyms": [["condiment", "a seasoning substance"], ["colorant", "a coloring agent"]], "antonyms": [["none"]]},
+    {"word": "tremble", "pos": "verb", "meanings": [
+      {"label": "shake with fear or cold", "definition": "To shake involuntarily from fear, cold, or weakness.", "examples": ["He trembled at the sound of the bell.", "Her hands trembled as she opened the letter."]},
+      {"label": "slight vibration", "definition": "To shake slightly, as of a thing.", "examples": ["The bridge trembled under the trucks.", "Leaves trembled in the wind."]}
+    ], "synonyms": [["shiver", "shake from cold or fear"], ["quake", "shake strongly"], ["shudder", "shake suddenly"]], "antonyms": [["steady", "become still"], ["still", "stop moving"]]},
+    {"word": "dentist", "pos": "noun", "meanings": [
+      {"label": "profession", "definition": "A person qualified to treat diseases and conditions of the teeth and gums.", "examples": ["Visit the dentist twice a year.", "The dentist filled two cavities."]}
+    ], "synonyms": [["orthodontist", "a teeth-alignment specialist"], ["dental surgeon", "a tooth surgeon"]], "antonyms": [["none"]]},
+    {"word": "brisk", "pos": "adjective", "meanings": [
+      {"label": "quick and active", "definition": "Fast, energetic, and often businesslike.", "examples": ["They took a brisk walk before dinner.", "Trade was brisk all morning."]},
+      {"label": "sharp in manner", "definition": "Abrupt or blunt in speech or manner.", "examples": ["Her brisk reply ended the conversation.", "The waiter was cheerful but brisk."]}
+    ], "synonyms": [["lively", "full of energy"], ["quick", "fast-moving"], ["curt", "rudely brief"]], "antonyms": [["sluggish", "slow and lazy"], ["gentle", "mild in manner"]]},
+    {"word": "harvest", "pos": "noun", "meanings": [
+      {"label": "gathering of crops", "definition": "The process or season of gathering crops.", "examples": ["The wheat harvest begins in September.", "A good harvest fed the village all winter."]},
+      {"label": "yield", "definition": "The amount of crops gathered.", "examples": ["This year's harvest was double the last."]}
+    ], "synonyms": [["yield", "amount produced"], ["reaping", "cutting of crops"], ["gathering", "collecting of produce"]], "antonyms": [["planting", "putting seeds in the ground"], ["sowing", "scattering seeds"]]},
+    {"word": "swift", "pos": "adjective", "meanings": [
+      {"label": "fast", "definition": "Moving or able to move very quickly.", "examples": ["The swift river carried the boat along.", "He made a swift exit."]}
+    ], "synonyms": [["rapid", "happening fast"], ["speedy", "quick"], ["fleet", "fast-moving"]], "antonyms": [["slow", "not fast"], ["sluggish", "slow and heavy"]]},
+    {"word": "shadow", "pos": "noun", "meanings": [
+      {"label": "dark shape", "definition": "A dark area cast by a body blocking light.", "examples": ["The tree threw a long shadow at sunset.", "She sat in the shadow of the wall."]},
+      {"label": "trace", "definition": "A small sign or remnant of something.", "examples": ["Without a shadow of doubt, he was innocent.", "The old empire lives on only in shadows."]}
+    ], "synonyms": [["silhouette", "dark outline"], ["shade", "comparative darkness"], ["trace", "small remnant"]], "antonyms": [["light", "brightness"], ["substance", "the real thing rather than a trace"]]},
+    {"word": "forgive", "pos": "verb", "meanings": [
+      {"label": "pardon", "definition": "To stop feeling anger toward someone who has wronged you.", "examples": ["She forgave her brother for breaking the vase.", "Forgive me for being late."]}
+    ], "synonyms": [["pardon", "absolve an offense"], ["excuse", "overlook a fault"], ["absolve", "free from blame"]], "antonyms": [["blame", "hold responsible"], ["resent", "feel bitterness toward"]]},
+    {"word": "gratitude", "pos": "noun", "meanings": [
+      {"label": "thankfulness", "definition": "The quality of being thankful for kindness received.", "examples": ["He expressed his gratitude with a small gift.", "She smiled with quiet gratitude."]}
+    ], "synonyms": [["thankfulness", "feeling of thanks"], ["appreciation", "recognition of value"]], "antonyms": [["ingratitude", "lack of thanks"], ["resentment", "bitter displeasure"]]},
+    {"word": "argue", "pos": "verb", "meanings": [
+      {"label": "disagree", "definition": "To exchange angry or strong words in a disagreement.", "examples": ["The couple argued about money again.", "They argued over the best route."]},
+      {"label": "give reasons", "definition": "To give reasons in support of an idea, often formally.", "examples": ["The lawyer argued that the evidence was weak.", "She argued for a smaller budget."]}
+    ], "synonyms": [["quarrel", "argue angrily"], ["debate", "argue formally"], ["contend", "argue with firm claims"]], "antonyms": [["agree", "share the same view"], ["concede", "admit the other side is right"]]},
+    {"word": "bicycle", "pos": "noun", "meanings": [
+      {"label": "vehicle", "definition": "A two-wheeled vehicle powered by pedals.", "examples": ["He rides a bicycle to work.", "My bicycle needs a new tire."]}
+    ], "synonyms": [["bike", "informal bicycle"], ["cycle", "a bicycle"]], "antonyms": [["none"]]},
+    {"word": "sincere", "pos": "adjective", "meanings": [
+      {"label": "genuine", "definition": "Free from pretense; meaning what one says.", "examples": ["Please accept my sincere apologies.", "Her smile was warm and sincere."]}
+    ], "synonyms": [["genuine", "truly felt"], ["heartfelt", "deeply and honestly felt"], ["honest", "free of deceit"]], "antonyms": [["insincere", "not genuinely felt"], ["fake", "pretended"]]},
+    {"word": "generous", "pos": "adjective", "meanings": [
+      {"label": "giving", "definition": "Willing to give more of something, such as money or time, than is expected.", "examples": ["A generous donation kept the shelter open.", "She is generous with her advice."]},
+      {"label": "larger than usual", "definition": "Larger or kinder than usual.", "examples": ["He heaped a generous portion of rice on the plate.", "The critics were generous with their praise."]}
+    ], "synonyms": [["giving", "willing to give"], ["liberal", "freely spending"], ["bountiful", "plentiful"]], "antonyms": [["stingy", "unwilling to give"], ["selfish", "caring only for oneself"]]},
+    {"word": "however", "pos": "adverb", "meanings": [
+      {"label": "contrast", "definition": "Used to introduce a statement that contrasts with what came before.", "examples": ["The plan was bold; however, it failed.", "However hard he tried, the knot held fast."]}
+    ], "synonyms": [["nevertheless", "in spite of that"], ["yet", "but at the same time"], ["still", "despite that"]], "antonyms": [["therefore", "introduces a result rather than a contrast"], ["likewise", "introduces agreement rather than contrast"]]},
+    {"word": "however", "pos": "conjunction", "meanings": [
+      {"label": "in whatever way", "definition": "In whatever way or to whatever degree.", "examples": ["However you look at it, the cost is too high.", "Arrange the rooms however you like."]}
+    ], "synonyms": [["in whatever way", "by any manner"], ["no matter how", "regardless of degree"]], "antonyms": [["none"]]},
+    {"word": "nevertheless", "pos": "adverb", "meanings": [
+      {"label": "in spite of that", "definition": "Used to say that something is true despite what was just said.", "examples": ["The task was hard; nevertheless, she finished it.", "It was raining; nevertheless, we went out."]}
+    ], "synonyms": [["nonetheless", "in spite of that"], ["even so", "despite that"], ["still", "nevertheless"]], "antonyms": [["therefore", "marks a conclusion rather than contrast"]]},
+    {"word": "run", "pos": "verb", "meanings": [
+      {"label": "move fast on foot", "definition": "To move quickly using your legs.", "examples": ["He runs five kilometers every morning.", "She ran to catch the bus."]},
+      {"label": "operate", "definition": "To manage or cause a machine, business, or system to work.", "examples": ["They run a small bakery downtown.", "This laptop runs two systems at once."]},
+      {"label": "flow", "definition": "To flow or cause to flow.", "examples": ["Rivers run into the sea.", "Tears ran down her cheeks."]}
+    ], "synonyms": [["sprint", "run at top speed"], ["jog", "run slowly"], ["operate", "manage or drive a machine"], ["flow", "move like a liquid"]], "antonyms": [["walk", "move on foot slowly"], ["stop", "cease moving or operating"]]},
+    {"word": "light", "pos": "noun", "meanings": [
+      {"label": "brightness", "definition": "The natural or artificial energy that makes things visible.", "examples": ["Sunlight is the best light for reading.", "A single candle gave light to the room."]},
+      {"label": "understanding", "definition": "Knowledge or understanding of something.", "examples": ["New evidence shed light on the case."]}
+    ], "synonyms": [["illumination", "light provided"], ["brightness", "quality of giving light"], ["clarity", "clear understanding"]], "antonyms": [["darkness", "absence of light"], ["obscurity", "state of being unclear"]]},
+    {"word": "kick the bucket", "pos": "idiom", "meanings": [
+      {"label": "to die", "definition": "An informal, humorous way to say someone or something has died.", "examples": ["The old tractor finally kicked the bucket.", "In the film the villain kicks the bucket at the end."]}
+    ], "synonyms": [["pass away", "to die (polite)"], ["bite the dust", "to die or fail (informal)"]], "antonyms": [["come to life", "begin living"], ["be born", "start existing"]]},
+    {"word": "spill the beans", "pos": "idiom", "meanings": [
+      {"label": "reveal a secret", "definition": "To reveal secret information, often accidentally.", "examples": ["Tom spilled the beans about the surprise party.", "Don't spill the beans before the announcement."]}
+    ], "synonyms": [["let the cat out of the bag", "reveal a secret"], ["blab", "reveal secrets carelessly"]], "antonyms": [["keep quiet", "say nothing"], ["keep a secret", "hold back information"]]},
+    {"word": "bite the bullet", "pos": "idiom", "meanings": [
+      {"label": "endure the inevitable", "definition": "To force yourself to do something difficult or unpleasant that cannot be avoided.", "examples": ["I finally bit the bullet and visited the dentist.", "She bit the bullet and told him the truth."]}
+    ], "synonyms": [["grin and bear it", "endure without complaint"], ["face the music", "accept the consequences"]], "antonyms": [["put it off", "delay the unavoidable"], ["chicken out", "avoid from fear"]]},
+    {"word": "break a leg", "pos": "idiom", "meanings": [
+      {"label": "good luck", "definition": "A way of wishing a performer good luck, where saying 'good luck' directly is considered unlucky.", "examples": ["Break a leg in tonight's play!", "The director told the cast to break a leg."]}
+    ], "synonyms": [["good luck", "direct wish of fortune"], ["knock them dead", "impress everyone"]], "antonyms": [["none"]]},
+    {"word": "under the weather", "pos": "idiom", "meanings": [
+      {"label": "slightly ill", "definition": "Feeling slightly sick or not as well as usual.", "examples": ["I'm feeling a bit under the weather today.", "She stayed home, under the weather with a cold."]}
+    ], "synonyms": [["unwell", "not in good health"], ["off-color", "slightly sick"]], "antonyms": [["fit as a fiddle", "in perfect health"], ["healthy", "in good health"]]},
+    {"word": "piece of cake", "pos": "idiom", "meanings": [
+      {"label": "very easy", "definition": "Something very easy to do.", "examples": ["The exam was a piece of cake.", "Fixing the bike is a piece of cake for her."]}
+    ], "synonyms": [["walk in the park", "something easy and pleasant"], ["no-brainer", "requiring no thought"]], "antonyms": [["tall order", "a very difficult demand"], ["uphill battle", "a hard struggle"]]},
+    {"word": "hit the hay", "pos": "idiom", "meanings": [
+      {"label": "go to bed", "definition": "An informal way to say you are going to sleep.", "examples": ["It's late; I'm hitting the hay.", "After the trip he hit the hay at once."]}
+    ], "synonyms": [["hit the sack", "go to bed (informal)"], ["turn in", "go to bed"]], "antonyms": [["wake up", "stop sleeping"], ["get up", "rise from bed"]]},
+    {"word": "cost an arm and a leg", "pos": "idiom", "meanings": [
+      {"label": "very expensive", "definition": "To cost a very large amount of money.", "examples": ["That designer bag cost an arm and a leg.", "Repairs on sports cars cost an arm and a leg."]}
+    ], "synonyms": [["a fortune", "a large amount of money"], ["highway robbery", "unfairly expensive"]], "antonyms": [["dirt cheap", "very inexpensive"], ["a bargain", "a good deal"]]},
+    {"word": "let the cat out of the bag", "pos": "idiom", "meanings": [
+      {"label": "reveal a secret", "definition": "To accidentally tell a secret.", "examples": ["Mike let the cat out of the bag about the engagement.", "Keep the plan quiet; don't let the cat out of the bag."]}
+    ], "synonyms": [["spill the beans", "reveal a secret"], ["give the game away", "reveal the secret plan"]], "antonyms": [["keep it under your hat", "keep a secret"], ["button your lips", "say nothing"]]},
+    {"word": "once in a blue moon", "pos": "idiom", "meanings": [
+      {"label": "very rarely", "definition": "Something that happens very rarely.", "examples": ["We see each other once in a blue moon.", "Once in a blue moon he cooks dinner."]}
+    ], "synonyms": [["rarely", "not often"], ["hardly ever", "almost never"]], "antonyms": [["all the time", "constantly"], ["frequently", "often"]]},
+    {"word": "long time no see", "pos": "phrase", "meanings": [
+      {"label": "greeting after absence", "definition": "A friendly greeting said to someone you have not seen for a long time.", "examples": ["Long time no see! How have you been?", "Well, long time no see, stranger."]}
+    ], "synonyms": [["it's been a while", "greeting after absence"], ["fancy meeting you here", "surprised greeting"]], "antonyms": [["none"]]},
+    {"word": "your guess is as good as mine", "pos": "phrase", "meanings": [
+      {"label": "I don't know either", "definition": "Said to mean that you know no more about something than the person asking.", "examples": ["'When will the bus arrive?' 'Your guess is as good as mine.'", "Why she quit? Your guess is as good as mine."]}
+    ], "synonyms": [["who knows", "no one knows"], ["beats me", "I have no idea"]], "antonyms": [["I know for sure", "certain knowledge"]]},
+    {"word": "better safe than sorry", "pos": "phrase", "meanings": [
+      {"label": "caution advised", "definition": "It is wiser to be careful now than to regret danger later.", "examples": ["Take an umbrella - better safe than sorry.", "Double-check the locks; better safe than sorry."]}
+    ], "synonyms": [["play it safe", "act cautiously"], ["caution first", "prioritize safety"]], "antonyms": [["nothing ventured, nothing gained", "risk is needed for reward"]]},
+    {"word": "it's not rocket science", "pos": "phrase", "meanings": [
+      {"label": "not difficult", "definition": "Said to mean that something is not complicated to understand or do.", "examples": ["Just restart the router - it's not rocket science.", "Cooking rice is not rocket science."]}
+    ], "synonyms": [["no-brainer", "very easy to understand"], ["easy as pie", "very easy"]], "antonyms": [["brain surgery", "something extremely difficult"], ["tall order", "very difficult task"]]},
+    {"word": "out of sight, out of mind", "pos": "phrase", "meanings": [
+      {"label": "forgotten when absent", "definition": "You stop thinking about people or things that are far away or no longer present.", "examples": ["Once he moved abroad, out of sight, out of mind.", "Store the snacks away - out of sight, out of mind."]}
+    ], "synonyms": [["far from eye, far from heart", "absence fades feeling"]], "antonyms": [["absence makes the heart grow fonder", "absence increases affection"]]},
+    {"word": "colporteur", "pos": "noun", "meanings": [
+      {"label": "peddler of books", "definition": "A person who travels to sell or distribute books, newspapers, and tracts, especially religious literature.", "examples": ["In the 1800s a colporteur might carry Bibles from village to village.", "The society sent colporteurs into the mountains."]}
+    ], "synonyms": [["peddler", "itinerant seller"], ["hawker", "street seller of goods"]], "antonyms": [["none"]]},
+    {"word": "susurrus", "pos": "noun", "meanings": [
+      {"label": "whispering sound", "definition": "A low, soft, rustling or whispering sound.", "examples": ["A susurrus of leaves filled the quiet street.", "The susurrus of the crowd rose and fell."]}
+    ], "synonyms": [["murmur", "low indistinct sound"], ["rustle", "soft dry sound"], ["whisper", "very soft sound"]], "antonyms": [["clamor", "loud uproar"], ["silence", "absence of sound"]]},
+    {"word": "apricity", "pos": "noun", "meanings": [
+      {"label": "winter sunshine", "definition": "The warmth of the sun in winter.", "examples": ["They stepped outside to enjoy the apricity of the January noon.", "Old essays praise the apricity of a clear winter morning."]}
+    ], "synonyms": [["winter sun", "cold-season sunshine"], ["sunshine", "light and warmth of the sun"]], "antonyms": [["winter chill", "cold of winter"]]},
+    {"word": "aglet", "pos": "noun", "meanings": [
+      {"label": "shoelace tip", "definition": "The small plastic or metal tip at the end of a shoelace that keeps it from fraying.", "examples": ["The aglet broke, and the lace frayed at once.", "He used tape to replace the missing aglet."]}
+    ], "synonyms": [["lace tip", "end of a shoelace"], ["ferrule", "a metal cap at a tip"]], "antonyms": [["none"]]},
+    {"word": "petrichor", "pos": "noun", "meanings": [
+      {"label": "smell of rain", "definition": "The pleasant earthy smell that comes after rain falls on dry ground.", "examples": ["Petrichor rose from the pavement as the storm ended.", "She opened the window to breathe in the petrichor."]}
+    ], "synonyms": [["rain scent", "the smell of rain"], ["earth smell", "odor of wet soil"]], "antonyms": [["none"]]},
+    {"word": "defenestration", "pos": "noun", "meanings": [
+      {"label": "throwing out a window", "definition": "The act of throwing someone or something out of a window.", "examples": ["The Defenestration of Prague sparked a thirty-year war.", "His sudden defenestration of the printer became office legend."]}
+    ], "synonyms": [["ejection", "forceful throwing out"], ["expulsion", "driving out"]], "antonyms": [["none"]]},
+    {"word": "onomastics", "pos": "noun", "meanings": [
+      {"label": "study of names", "definition": "The study of the origin, history, and use of proper names.", "examples": ["Onomastics explains why so many Smiths exist.", "She specializes in the onomastics of river names."]}
+    ], "synonyms": [["name study", "scholarship about names"], ["toponomastics", "study of place names"]], "antonyms": [["none"]]},
+    {"word": "calumny", "pos": "noun", "meanings": [
+      {"label": "false accusation", "definition": "A false and damaging statement about someone; slander.", "examples": ["He endured years of calumny from rivals.", "The article was pure calumny, as the court found."]}
+    ], "synonyms": [["slander", "spoken defamation"], ["libel", "published defamation"], ["smear", "damaging false claim"]], "antonyms": [["praise", "expression of approval"], ["vindication", "clearing of blame"]]},
+    {"word": "redolent", "pos": "adjective", "meanings": [
+      {"label": "smelling of", "definition": "Strongly smelling of a particular thing.", "examples": ["The kitchen was redolent of cinnamon and cloves.", "Air redolent of pine filled the cabin."]},
+      {"label": "evocative", "definition": "Suggesting or bringing back memories or associations.", "examples": ["The song is redolent of old summers."]}
+    ], "synonyms": [["fragrant", "pleasant-smelling"], ["evocative", "calling up memories"], ["suggestive", "bringing associations"]], "antonyms": [["odorless", "having no smell"], ["unreminiscent", "recalling nothing"]]},
+    {"word": "sardonic", "pos": "adjective", "meanings": [
+      {"label": "scornfully mocking", "definition": "Mocking in a bitter, grim, or scornful way.", "examples": ["He gave a sardonic laugh at his own misfortune.", "Her sardonic remarks cut deeper than anger."]}
+    ], "synonyms": [["mocking", "derisive"], ["wry", "dryly humorous"], ["cynical", "contemptuous of motives"]], "antonyms": [["sincere", "genuine and earnest"], ["respectful", "showing esteem"]]},
+    {"word": "flumbrelate", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "quorbing", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "glimberdash", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "vantrel", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "trivulent", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "scorrow", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "bellingwether", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "cramulent", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "morphanic snift", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true},
+    {"word": "haptical drift", "pos": "nonword", "meanings": [], "synonyms": [], "antonyms": [], "abstain": true}
+  ]
+}

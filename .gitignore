@@ -115,3 +115,8 @@ ui_prototype/
 
 # Local llama.cpp CLI binaries (downloaded release zips)
 llama-bin/
+
+# Training venv and outputs
+training/.venv/
+training/out/
+training/ckpt/
