@@ -44,6 +44,7 @@ struct NativeModel {
 
     int32_t n_past = 0;
     int32_t n_remain = 0;
+    bool affinity_ok = false;  // fast-core pin applied (ggml workers inherit it)
 
     // Buffer for the current token text to ensure pointer validity
     std::string current_token_text;
@@ -72,6 +73,61 @@ static void ensure_backend_init() {
         llama_backend_init();
     });
 }
+
+#if defined(__linux__)
+#include <sched.h>
+#include <fstream>
+#include <cerrno>
+
+// Pin the calling thread (and every inference worker thread it later creates,
+// which inherit its mask) to the n_threads highest-frequency CPUs. Without
+// this the scheduler floats decode threads onto the little cores; measured
+// ~18% slower tg128 on the Dimensity 8300 (1x A715 3.35GHz + 3x 2.85GHz +
+// 4x A510 2.0GHz). Mirrors MNN's BackendConfig Power_High. Returns false if
+// the OS rejected every candidate mask (e.g. app cold-start cpuset excludes
+// the fast cores — retried at generate time, when the app is foreground).
+static bool pin_to_fast_cores(int n_threads) {
+    std::vector<std::pair<long, int>> freqs;  // (cpuinfo_max_freq khz, cpu)
+    for (int cpu = 0; cpu < 64; cpu++) {
+        std::ifstream f("/sys/devices/system/cpu/cpu" + std::to_string(cpu) +
+                        "/cpufreq/cpuinfo_max_freq");
+        long khz = 0;
+        if ((f >> khz) && khz > 0) freqs.push_back({khz, cpu});
+    }
+    if (n_threads <= 0 || (int)freqs.size() < n_threads) return false;
+    std::sort(freqs.rbegin(), freqs.rend());
+
+    cpu_set_t allowed;
+    CPU_ZERO(&allowed);
+    if (sched_getaffinity(0, sizeof(allowed), &allowed) != 0) return false;
+
+    // Preferred: exactly the n_threads fastest CPUs (prime+big clusters).
+    // Fallback: the fastest CPUs the process is actually allowed to use, so a
+    // restricted cpuset degrades to pinning within it instead of EINVAL.
+    for (int attempt = 0; attempt < 2; attempt++) {
+        cpu_set_t set;
+        CPU_ZERO(&set);
+        std::string cpus;
+        int picked = 0;
+        for (const auto& [khz, cpu] : freqs) {
+            if (picked == n_threads) break;
+            if (attempt == 1 && !CPU_ISSET(cpu, &allowed)) continue;
+            CPU_SET(cpu, &set);
+            cpus += " cpu" + std::to_string(cpu) + "@" + std::to_string(khz / 1000) + "MHz";
+            picked++;
+        }
+        if (picked < n_threads) continue;
+        if (sched_setaffinity(0, sizeof(set), &set) == 0) {
+            __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Pinned inference to:%s%s",
+                                cpus.c_str(), attempt == 1 ? " (allowed-subset)" : "");
+            return true;
+        }
+    }
+    __android_log_print(ANDROID_LOG_WARN, "LlamaNative",
+                        "sched_setaffinity rejected (allowed mask may exclude all fast cores)");
+    return false;
+}
+#endif
 
 // One summary per generation, on whichever EOF path ends it first.
 static void log_decode_summary(NativeModel* native_model) {
@@ -113,6 +169,12 @@ int32_t llama_native_init_model(const char* model_path, llama_native_init_option
     __android_log_print(ANDROID_LOG_INFO, "LlamaNative", "Calculated n_ctx: %d", ctx_params.n_ctx);
     ctx_params.n_threads = options.thread_count > 0 ? options.thread_count : 4;
     ctx_params.n_threads_batch = ctx_params.n_threads;
+#if defined(__linux__)
+    // Must run before llama_init_from_model: the context builds its ggml
+    // threadpool on the calling thread, which inherits this affinity. May
+    // fail during app cold-start (restricted cpuset); retried per generate.
+    const bool pinned_now = pin_to_fast_cores(ctx_params.n_threads);
+#endif
     ctx_params.flash_attn_type = LLAMA_FLASH_ATTN_TYPE_ENABLED;
     // Quantized KV cache halves context RAM (matters for the 5GB MoE on 8GB
     // phones); requires flash attention. Flip to GGML_TYPE_F16 if a model
@@ -132,6 +194,9 @@ int32_t llama_native_init_model(const char* model_path, llama_native_init_option
     native_model->thread_count = ctx_params.n_threads;
     native_model->n_past = 0;
     native_model->n_remain = 0;
+#if defined(__linux__)
+    native_model->affinity_ok = pinned_now;
+#endif
 
     *handle_out = static_cast<llama_native_handle>(native_model);
     return LLAMA_NATIVE_SUCCESS;
@@ -240,6 +305,16 @@ int32_t llama_native_generate(llama_native_handle handle, const char* prompt, ll
     }
 
     NativeModel* native_model = static_cast<NativeModel*>(handle);
+
+#if defined(__linux__)
+    // Cold-start cpuset can reject the pin at model load; by the first real
+    // lookup the app is foreground with the full cpuset. The ggml worker pool
+    // is spawned per graph compute from this thread, so a late pin still
+    // reaches every worker.
+    if (!native_model->affinity_ok) {
+        native_model->affinity_ok = pin_to_fast_cores(native_model->thread_count);
+    }
+#endif
 
     // Reset state for new generation (Single-turn optimization)
     // We discard previous context because the user wants fresh lookups every time.
