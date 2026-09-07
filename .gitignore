@@ -120,3 +120,17 @@ llama-bin/
 training/.venv/
 training/out/
 training/ckpt/
+
+# Bake-off eval outputs (JSONL runs, logs)
+training/eval_out/
+
+# Local MNN tree: upstream source, arm64 builds, converted models, bench
+# scripts and phone artifacts (~5GB). Local-only working material.
+mnn/
+
+# Pig-farm art pipeline (sketches, renders, generated breed PNGs) —
+# sprites enter the app via app/assets/, the working dir stays local.
+pigs/
+
+# Tool hook state
+.mimosa/
