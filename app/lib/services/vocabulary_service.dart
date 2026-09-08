@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class VocabularyItem {
@@ -66,7 +67,7 @@ class VocabularyService {
           }
         });
       } catch (e) {
-        print("Error loading vocabulary: $e");
+        debugPrint("Error loading vocabulary: $e");
         _savedWords = {};
       }
     }
@@ -104,6 +105,22 @@ class VocabularyService {
     return _savedWords.containsKey(word);
   }
 
+  bool isMastered(String word) => (_savedWords[word]?.familiarity ?? 0) >= 1.0;
+
+  /// Flag a word as proven in a test. First mastery is what pays the coin,
+  /// so re-testing a known word can't farm the economy.
+  Future<void> markMastered(String word) async {
+    final existing = _savedWords[word];
+    if (existing == null || existing.familiarity >= 1.0) return;
+    _savedWords[word] = VocabularyItem(
+      word: word,
+      definition: existing.definition,
+      addedAt: existing.addedAt,
+      familiarity: 1.0,
+    );
+    await _saveToPrefs();
+  }
+
   String? getDefinition(String word) {
     return _savedWords[word]?.definition;
   }
@@ -128,10 +145,5 @@ class VocabularyService {
     });
     
     return list;
-  }
-  
-  // Deprecated: Use getSortedWords instead
-  List<String> getWordList() {
-    return _savedWords.keys.toList()..sort();
   }
 }

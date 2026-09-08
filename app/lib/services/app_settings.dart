@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum PromptStyle { llama3, chatml, gemma, qwen3, phi, lfm25, lfm25tuned, gemma4, minicpm5, nemotron3 }
@@ -146,6 +147,10 @@ class AppSettings {
   
   // New Settings
   int _coins = 0;
+
+  /// Live coin balance — the farm pill and the Pavilion track this so
+  /// spends and earnings show up without a shell rebuild.
+  final ValueNotifier<int> coinsChanged = ValueNotifier(0);
   // Greedy by default: dictionary entries should be deterministic, and
   // speculative decoding accepts drafts against the sampled token - sampling
   // at temperature > 0 collapses the draft acceptance rate (measured on
@@ -177,6 +182,7 @@ class AppSettings {
     _selectedModelFilename = _prefs.getString(_keySelectedModel) ?? availableModels.first.filename;
     
     _coins = _prefs.getInt(_keyCoins) ?? 0;
+    coinsChanged.value = _coins;
     _temperature = _prefs.getDouble(_keyTemperature) ?? 0.0;
     _topP = _prefs.getDouble(_keyTopP) ?? 0.95;
     _topK = _prefs.getInt(_keyTopK) ?? 40;
@@ -200,7 +206,18 @@ class AppSettings {
 
   Future<void> addCoins(int amount) async {
     _coins += amount;
+    coinsChanged.value = _coins;
     await _prefs.setInt(_keyCoins, _coins);
+  }
+
+  /// Pay for a farm purchase. The balance only moves if it can cover the
+  /// full amount, so a failed purchase never eats coins.
+  Future<bool> spendCoins(int amount) async {
+    if (_coins < amount) return false;
+    _coins -= amount;
+    coinsChanged.value = _coins;
+    await _prefs.setInt(_keyCoins, _coins);
+    return true;
   }
 
   Future<void> setModelParams({double? temp, double? p, int? k}) async {

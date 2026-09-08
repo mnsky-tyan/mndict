@@ -33,26 +33,8 @@ class LlamaIsolate {
         _tokenStreamController.addError(message['message']);
         _statusStreamController.add(LlamaStatus.error);
       } else if (message is Map && message['type'] == 'done') {
-        // Generation finished
-        // We don't close the stream here because we might generate again
-        // But we need to signal the UI. 
-        // Since we are using a StreamController, we can't easily send a "done" event without closing it.
-        // Instead, let's send a special token or just rely on the UI handling a custom event if we exposed it.
-        // BUT, the UI listens to `tokenStream`.
-        // Let's just close the controller? No, we reuse the isolate.
-        // We should probably expose a separate status stream or just send a special marker.
-        // Actually, the UI `listen` has `onDone`. If we close the controller, we can't reuse it.
-        // Let's change the protocol: The UI should listen to a broadcast stream that stays open.
-        // But `_isGenerating` needs to be set to false.
-        // Let's send a special "[DONE]" token? No, that's hacky.
-        // Let's add a `onDone` callback to `generate`? No, it's async.
-        
-        // BETTER APPROACH:
-        // The `generate` method in `LlamaIsolate` returns a `Future`.
-        // We can make that Future complete when generation is done?
-        // No, `generate` just sends the command.
-        
-        // Let's add a `statusStream` to `LlamaIsolate`.
+        // Generation finished. The token stream stays open (the isolate is
+        // reused), so completion is signaled on statusStream instead.
         _statusStreamController.add(LlamaStatus.done);
       }
     });

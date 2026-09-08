@@ -1,15 +1,17 @@
+// Struct field names mirror the C declarations in
+// artifacts/include/llama_native_api.h, which trips lowerCamelCase lints.
+// ignore_for_file: non_constant_identifier_names
 import 'dart:ffi';
 import 'dart:io';
 import 'package:ffi/ffi.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
-import 'dart:typed_data';
 
 // C function signatures
 typedef NativeInitModel = Int32 Function(Pointer<Utf8>, NativeInitOptions, Pointer<Pointer<Void>>);
 typedef NativeGenerate = Int32 Function(Pointer<Void>, Pointer<Utf8>, NativeGenerateOptions);
 typedef NativeStreamNextToken = Int32 Function(Pointer<Void>, Pointer<Pointer<Utf8>>);
 typedef NativeFreeModel = Void Function(Pointer<Void>);
-typedef NativeGetRamEstimate = Int32 Function(Pointer<Utf8>, Pointer<Uint64>);
 typedef NativeAttachDraft = Int32 Function(Pointer<Void>, Pointer<Utf8>, Int32);
 
 // Dart function signatures
@@ -17,7 +19,6 @@ typedef InitModel = int Function(Pointer<Utf8>, NativeInitOptions, Pointer<Point
 typedef Generate = int Function(Pointer<Void>, Pointer<Utf8>, NativeGenerateOptions);
 typedef StreamNextToken = int Function(Pointer<Void>, Pointer<Pointer<Utf8>>);
 typedef FreeModel = void Function(Pointer<Void>);
-typedef GetRamEstimate = int Function(Pointer<Utf8>, Pointer<Uint64>);
 typedef AttachDraft = int Function(Pointer<Void>, Pointer<Utf8>, int);
 
 // Structs
@@ -49,7 +50,6 @@ class LlamaNative {
   late Generate _generate;
   late StreamNextToken _streamNextToken;
   late FreeModel _freeModel;
-  late GetRamEstimate _getRamEstimate;
   late AttachDraft _attachDraft;
 
   Pointer<Void> _modelHandle = nullptr;
@@ -66,7 +66,6 @@ class LlamaNative {
     _generate = _lib.lookupFunction<NativeGenerate, Generate>('llama_native_generate');
     _streamNextToken = _lib.lookupFunction<NativeStreamNextToken, StreamNextToken>('llama_native_stream_next_token');
     _freeModel = _lib.lookupFunction<NativeFreeModel, FreeModel>('llama_native_free_model');
-    _getRamEstimate = _lib.lookupFunction<NativeGetRamEstimate, GetRamEstimate>('llama_native_get_required_ram_estimate');
     _attachDraft = _lib.lookupFunction<NativeAttachDraft, AttachDraft>('llama_native_attach_draft');
   }
 
@@ -159,10 +158,10 @@ class LlamaNative {
             yield Uint8List.fromList(ptr.asTypedList(len));
           }
         } else if (result == -7) { // EOF (LLAMA_NATIVE_EOF)
-          print("Native Llama: EOF reached");
+          debugPrint("Native Llama: EOF reached");
           break;
         } else {
-          print("Native Llama: Error $result");
+          debugPrint("Native Llama: Error $result");
           break;
         }
       }

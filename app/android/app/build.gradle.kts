@@ -34,6 +34,10 @@ android {
         externalNativeBuild {
             cmake {
                 arguments("-DANDROID_ABI=arm64-v8a")
+                // MNN in-app spike bridge: MNN_SPIKE=1 flutter build apk --release
+                if (System.getenv("MNN_SPIKE") == "1") {
+                    arguments("-DMNDICT_MNN_SPIKE=ON")
+                }
                 abiFilters("arm64-v8a")
             }
         }

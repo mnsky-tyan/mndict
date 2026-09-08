@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../services/app_settings.dart';
+import '../../services/farm_profile.dart';
 import '../../services/vocabulary_service.dart';
 import '../../services/dictionary_service.dart';
 import '../theme/glass_theme.dart';
@@ -15,11 +16,15 @@ class TestScreen extends StatefulWidget {
   final DictionaryService? dictionaryService;
   final AppSettings settings;
 
+  /// The farm ledger: mastery pays coins AND XP/quests when present.
+  final FarmProfile? farmProfile;
+
   const TestScreen({
     super.key,
     required this.vocabularyService,
     required this.dictionaryService,
     required this.settings,
+    this.farmProfile,
   });
 
   @override
@@ -80,9 +85,21 @@ class _TestScreenState extends State<TestScreen> {
       setState(() {
         _isChecking = false;
         if (score >= 0.9) {
-          _feedbackMessage = "Correct! (Similarity: ${(score * 100).toStringAsFixed(1)}%)";
-          widget.settings.addCoins(1); // Add coin
-          // Optional: Mark as familiar
+          // First mastery pays the coin — proving a known word again
+          // doesn't refill the purse.
+          final firstTime =
+              !widget.vocabularyService.isMastered(word);
+          if (firstTime) {
+            if (widget.farmProfile != null) {
+              widget.farmProfile!.recordMastered();
+            } else {
+              widget.settings.addCoins(1);
+            }
+            widget.vocabularyService.markMastered(word);
+          }
+          _feedbackMessage = firstTime
+              ? "Correct! +1 coin (Similarity: ${(score * 100).toStringAsFixed(1)}%)"
+              : "Correct! (Similarity: ${(score * 100).toStringAsFixed(1)}%)";
         } else {
           _feedbackMessage = "Incorrect. (Similarity: ${(score * 100).toStringAsFixed(1)}%)";
           _showPopup = true;

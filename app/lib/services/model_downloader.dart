@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 class ModelDownloader {
@@ -49,8 +50,10 @@ class ModelDownloader {
       if (await partFile.exists()) {
         await partFile.delete();
       }
-      if (CancelToken.isCancel(e as DioException)) {
-        print('Download cancelled');
+      // Only DioException can be a cancellation; the cast used to turn any
+      // other error type (e.g. a rename failure) into a TypeError.
+      if (e is DioException && CancelToken.isCancel(e)) {
+        debugPrint('Download cancelled');
       } else {
         rethrow;
       }

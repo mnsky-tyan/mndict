@@ -32,12 +32,15 @@ class _ModelSettingsScreenState extends State<ModelSettingsScreen> {
       p: _topP,
       k: _topK,
     );
+    // Match the surrounding theme; a light-palette bar on dark mode would
+    // flash bright on save.
+    final p = widget.settings.isDarkMode ? GlassPalette.dark : GlassPalette.light;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Settings saved!',
-            style: GlassText.body(GlassPalette.light, 14,
+            style: GlassText.body(p, 14,
                 weight: FontWeight.w500)),
-        backgroundColor: GlassPalette.light.success,
+        backgroundColor: p.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),

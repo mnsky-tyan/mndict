@@ -5,6 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../services/app_settings.dart';
 import '../../services/dictionary_service.dart';
+import '../../services/farm_profile.dart';
+import '../../services/mnn_spike.dart';
+import '../../services/pig_service.dart';
 import '../../services/vocabulary_service.dart';
 import 'theme/glass_theme.dart';
 import 'widgets/aurora_background.dart';
@@ -17,7 +20,7 @@ import 'widgets/pressable.dart';
 import 'widgets/search_bar.dart';
 import 'widgets/side_menu.dart';
 import 'widgets/vocabulary_detail_popup.dart';
-import 'screens/home_view.dart';
+import 'screens/farm_view.dart';
 import 'screens/test_screen.dart';
 
 class GlassDictionaryApp extends StatefulWidget {
@@ -32,6 +35,8 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
   final AppSettings _settings = AppSettings();
   DictionaryService? _dictionaryService;
   late VocabularyService _vocabularyService;
+  late final PigService _pigService;
+  late final FarmProfile _farmProfile;
 
   final TextEditingController _searchController = TextEditingController();
 
@@ -81,6 +86,8 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
   void initState() {
     super.initState();
     _vocabularyService = VocabularyService();
+    _pigService = PigService(_settings);
+    _farmProfile = FarmProfile(_settings, _pigService);
     // Rebuild when the drawer fully opens/closes so PopScope's canPop and
     // the menu button stay in sync.
     _drawerC.addStatusListener((status) {
@@ -95,6 +102,8 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
   Future<void> _init() async {
     await _settings.init();
     await _vocabularyService.init();
+    await _pigService.init();
+    await _farmProfile.init();
 
     _dictionaryService = DictionaryService(_settings);
 
@@ -117,7 +126,7 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
     );
 
     _dictionaryService!.statusStream.listen((status) {
-      print("Status: $status");
+      debugPrint("Status: $status");
       setState(() => _statusMessage = status);
       if (status.toLowerCase() == "done" ||
           status.startsWith("Error") ||
@@ -130,6 +139,12 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
 
     await _dictionaryService!.init();
 
+    // MNN in-app spike (MNN_SPIKE=1 builds only): paired engine sweep after
+    // the llama model is up, measured by the same "Decode summary" logs.
+    if (kMnnSpikeEnabled) {
+      unawaited(MnnSpike.runSweep(_dictionaryService!));
+    }
+
     setState(() {});
   }
 
@@ -138,6 +153,8 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
     _drawerC.dispose();
     _pagesC.dispose();
     _dictionaryService?.dispose();
+    _pigService.dispose();
+    _farmProfile.dispose();
     _searchController.dispose();
     _definition.dispose();
     super.dispose();
@@ -180,7 +197,8 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
       await _vocabularyService.removeWord(_currentWord);
     } else {
       await _vocabularyService.saveWord(_currentWord, _definitionContent);
-      await _settings.addCoins(1);
+      // The farm pays for this: +1 coin, +4 XP, quest progress.
+      await _farmProfile.recordWordSaved();
       HapticFeedback.heavyImpact();
     }
 
@@ -232,7 +250,7 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.only(left: 6),
       child: Text(
-        const ['', 'Vocabulary', 'Test', 'Home'][i],
+        const ['', 'Vocabulary', 'Test', 'Farm'][i],
         style: GlassText.display(p, 20, weight: FontWeight.w600),
       ),
     );
@@ -545,20 +563,22 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
                                             dictionaryService:
                                                 _dictionaryService,
                                             settings: _settings,
+                                            farmProfile: _farmProfile,
                                           ),
                                         ),
                                       ),
 
-                                      // Tab 3: Home
+                                      // Tab 3: Farm — the pig world where
+                                      // learning rewards come to life.
                                       SizedBox.expand(
-                                        child: Padding(
-                                          padding: EdgeInsets.fromLTRB(
-                                            20,
-                                            8,
-                                            20,
-                                            bottomInset + 96,
-                                          ),
-                                          child: _buildHome(p),
+                                        child: FarmView(
+                                          settings: _settings,
+                                          pigs: _pigService,
+                                          profile: _farmProfile,
+                                          wordCount: _vocabularyService
+                                              .getSortedWords(
+                                                  SortType.latest, true)
+                                              .length,
                                         ),
                                       ),
                                     ],
@@ -578,6 +598,16 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
                       child: GlassBottomNavBar(
                         position: _pagesC,
                         onTap: _onNavTapped,
+                      ),
+                    ),
+                    // Farm reward crumbs: +1 coin, quests, level-ups,
+                    // badges — wherever in the app they were earned.
+                    Positioned(
+                      top: 54,
+                      left: 0,
+                      right: 0,
+                      child: IgnorePointer(
+                        child: _RewardChips(profile: _farmProfile),
                       ),
                     ),
                     // Vocabulary detail bottom sheet
@@ -668,30 +698,6 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildHome(GlassPalette p) {
-    final model = _settings.currentModelConfig;
-    final status = _statusMessage ?? 'Checking model…';
-    final modelReady = status == 'Ready' || status == 'Model Loaded';
-    final modelBusy =
-        status.contains('Loading') ||
-        status.contains('Warming') ||
-        status.contains('Checking');
-
-    return HomeView(
-      wordCount: _vocabularyService
-          .getSortedWords(SortType.latest, true)
-          .length,
-      coins: _settings.coins,
-      modelName: model.name,
-      modelFilename: model.filename,
-      modelSizeMB: model.sizeMB,
-      modelReady: modelReady,
-      modelBusy: modelBusy,
-      recentWords: _vocabularyService.getSortedWords(SortType.latest, true),
-      onNav: _onNavTapped,
     );
   }
 
@@ -1195,6 +1201,123 @@ class _PageLayer extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Farm reward crumbs — the visible thread from studying to the farm.
+// ---------------------------------------------------------------------------
+
+class _ChipData {
+  final int id;
+  final String label;
+  final bool celebrate;
+  _ChipData(this.id, this.label, this.celebrate);
+}
+
+class _RewardChips extends StatefulWidget {
+  final FarmProfile profile;
+
+  const _RewardChips({required this.profile});
+
+  @override
+  State<_RewardChips> createState() => _RewardChipsState();
+}
+
+class _RewardChipsState extends State<_RewardChips> {
+  final List<_ChipData> _chips = [];
+  var _nextId = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.profile.addListener(_drain);
+    _drain();
+  }
+
+  @override
+  void didUpdateWidget(_RewardChips old) {
+    super.didUpdateWidget(old);
+    if (old.profile != widget.profile) {
+      old.profile.removeListener(_drain);
+      widget.profile.addListener(_drain);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.profile.removeListener(_drain);
+    super.dispose();
+  }
+
+  void _drain() {
+    final rewards = widget.profile.takeRewards();
+    if (rewards.isEmpty || !mounted) return;
+    setState(() {
+      for (final r in rewards) {
+        final chip = _ChipData(_nextId++, r.label, r.celebrate);
+        _chips.add(chip);
+        // Each crumb lives briefly, then fades itself out.
+        Future.delayed(
+          Duration(milliseconds: r.celebrate ? 3200 : 1900),
+          () {
+            if (!mounted) return;
+            setState(() => _chips.removeWhere((c) => c.id == chip.id));
+          },
+        );
+      }
+      // Never let a burst bury the screen.
+      while (_chips.length > 4) {
+        _chips.removeAt(0);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_chips.isEmpty) return const SizedBox.shrink();
+    final p = GlassScope.of(context).palette;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final chip in _chips)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: TweenAnimationBuilder<double>(
+              key: ValueKey(chip.id),
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: const Duration(milliseconds: 260),
+              curve: Curves.easeOutBack,
+              builder: (context, t, child) => Opacity(
+                opacity: t.clamp(0.0, 1.0),
+                child: Transform.scale(scale: 0.7 + 0.3 * t, child: child),
+              ),
+              child: GlassContainer(
+                blur: 0,
+                chrome: !chip.celebrate,
+                solid: chip.celebrate,
+                sheen: false,
+                borderRadius: 999,
+                padding: EdgeInsets.symmetric(
+                    horizontal: 14, vertical: chip.celebrate ? 9 : 6),
+                child: Text(
+                  chip.label,
+                  style: GlassText.body(
+                    p,
+                    chip.celebrate ? 13 : 12,
+                    weight: FontWeight.w800,
+                    color: chip.celebrate
+                        ? (p.isDark
+                            ? const Color(0xFF0B1020)
+                            : Colors.white)
+                        : p.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

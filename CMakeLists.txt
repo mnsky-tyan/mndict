@@ -46,3 +46,21 @@ target_link_libraries(llama_native PRIVATE llama llama-common log)
 
 # Rename output to libllama.so
 set_target_properties(llama_native PROPERTIES OUTPUT_NAME "llama")
+
+# ---------------------------------------------------------------------------
+# MNN in-app spike bridge, opt-in only: gradle passes -DMNDICT_MNN_SPIKE=ON
+# when MNN_SPIKE=1 is set in the environment. Links the prebuilt arm64 static
+# MNN (mnn/mnn-src/build-arm64-static, NDK 27.0.12077973) behind the C ABI in
+# jni/mnn_spike.cpp for dart:ffi. Not part of production builds.
+option(MNDICT_MNN_SPIKE "Build the MNN in-app spike bridge" OFF)
+if(MNDICT_MNN_SPIKE)
+    set(MNN_SPIKE_TREE "${CMAKE_CURRENT_SOURCE_DIR}/mnn/mnn-src")
+    add_library(mnn_spike SHARED jni/mnn_spike.cpp)
+    target_include_directories(mnn_spike PRIVATE
+        "${MNN_SPIKE_TREE}/include"
+        "${MNN_SPIKE_TREE}/transformers/llm/engine/include")
+    target_link_libraries(mnn_spike PRIVATE
+        "${MNN_SPIKE_TREE}/build-arm64-static/libMNN.a"
+        log m android atomic)
+    set_target_properties(mnn_spike PROPERTIES OUTPUT_NAME "mnnspike")
+endif()

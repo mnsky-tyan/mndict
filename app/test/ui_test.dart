@@ -64,23 +64,28 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump(const Duration(milliseconds: 400));
 
-    // Tap the Home tab (non-adjacent switch) via the nav bar and let the
+    // Tap the Farm tab (non-adjacent switch) via the nav bar and let the
     // fade-through play.
     await tester.tap(find.descendant(
       of: find.byType(GlassBottomNavBar),
-      matching: find.text('Home'),
+      matching: find.text('Farm'),
     ));
     await tester.pump(const Duration(milliseconds: 120));
     await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 700));
 
-    // The home page hero must be visible after the switch.
-    expect(find.text('Your library'), findsOneWidget);
+    // The farm renders its Market button. A first run gifts the Truffle
+    // starter, so the pen already holds 1/12 pigs — no invitation card.
+    // The farm animates forever, so no pumpAndSettle.
+    expect(find.text('Pig Market'), findsOneWidget);
+    expect(find.text('My Farm'), findsOneWidget);
+    expect(find.text('Your farm is waiting'), findsNothing);
+    expect(find.text('1/12'), findsOneWidget);
 
-    // The search field is Search-tab-only: on Home the top bar shows the
-    // tab title instead (nav label + top-bar title both say 'Home').
+    // The search field is Search-tab-only: on Farm the top bar shows the
+    // tab title instead (nav label + top-bar title both say 'Farm').
     expect(find.byType(GlassSearchBar), findsNothing);
-    expect(find.text('Home'), findsNWidgets(2));
+    expect(find.text('Farm'), findsNWidgets(2));
 
     // Back to Search: the field returns.
     await tester.tap(find.descendant(
@@ -123,5 +128,29 @@ void main() {
     // of the nav label, the search field is gone.
     expect(find.text('Vocabulary'), findsNWidgets(2));
     expect(find.byType(GlassSearchBar), findsNothing);
+  });
+
+  testWidgets('submitting a search without a model surfaces the error card', (WidgetTester tester) async {
+    GoogleFonts.config.allowRuntimeFetching = false;
+    SharedPreferences.setMockInitialValues({});
+    TestWidgetsFlutterBinding.ensureInitialized();
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (call) async => '/tmp');
+
+    await tester.pumpWidget(const MaterialApp(home: GlassDictionaryApp()));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
+
+    // No model file exists in the mocked '/tmp', so the service reports
+    // "not loaded" and searchWord must forward the error to the UI card.
+    await tester.enterText(find.byType(TextField), 'test');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.byType(DefinitionCard), findsOneWidget);
+    expect(find.text('test'), findsWidgets); // the entry-word title
   });
 }

@@ -23,7 +23,7 @@ class GlassBottomNavBar extends StatelessWidget {
       (FontAwesomeIcons.magnifyingGlass, 'Search'),
       (FontAwesomeIcons.bookOpen, 'Vocabulary'),
       (FontAwesomeIcons.graduationCap, 'Test'),
-      (FontAwesomeIcons.house, 'Home'),
+      (FontAwesomeIcons.house, 'Farm'),
     ];
 
     return RepaintBoundary(
