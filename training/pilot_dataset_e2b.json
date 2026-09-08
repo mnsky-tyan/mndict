@@ -1,0 +1,170 @@
+{
+ "meta": {
+  "name": "mndict E2B pilot dataset v1 (2026-09-07)",
+  "format": "rich entry: numbered meanings 'N. pos (label): definition', '- example' lines, optional Usage, single-line Synonyms/Antonyms; abstains are exactly 'None'; misspelled headwords map to the correct entry",
+  "notes": "Rare-word definitions written CORRECTLY (the zero-shot model got colporteur/aglet/apricity wrong — the dataset teaches them). 2 epochs max."
+ },
+ "entries": [
+  {"word": "window", "pos": "noun", "meanings": [
+    {"label": "opening", "definition": "An opening in a wall or roof of a building, fitted with glass to let light in and keep weather out.", "examples": ["She opened the window to let in some fresh air.", "The morning sunlight streamed through the kitchen window."]},
+    {"label": "computing", "definition": "A framed area on a computer screen that shows a particular program or set of information.", "examples": ["Close the extra browser windows to free up memory."]}
+  ], "usage": "A 'window of opportunity' is a short period of time in which something can be done.", "synonyms": ["opening"], "antonyms": []},
+  {"word": "ephemeral", "pos": "adjective", "meanings": [
+    {"label": "short-lived", "definition": "Lasting for only a very short time, and soon gone or forgotten.", "examples": ["Fame on the internet is often ephemeral: a video can be everywhere today and forgotten next week.", "Cherry blossoms are ephemeral, which is exactly what makes them so treasured."]}
+  ], "usage": "Formal; common in writing about art, fashion, and nature.", "synonyms": ["fleeting", "transient", "momentary"], "antonyms": ["lasting", "permanent"]},
+  {"word": "threshold", "pos": "noun", "meanings": [
+    {"label": "doorway", "definition": "A strip of wood or stone forming the bottom of a doorway, crossed when entering a room or building.", "examples": ["He paused on the threshold before knocking."]},
+    {"label": "level", "definition": "The point or level at which something begins or changes.", "examples": ["The pain threshold differs from person to person.", "New rules kick in once noise passes a set threshold."]}
+  ], "usage": "'On the threshold of' means at the very beginning of something new.", "synonyms": ["doorstep", "limit", "border"], "antonyms": []},
+  {"word": "murmur", "pos": "verb", "meanings": [
+    {"label": "speak quietly", "definition": "To say something in a soft, quiet voice that is hard to hear clearly.", "examples": ["She murmured an apology and looked away.", "He murmured her name in his sleep."]},
+    {"label": "make a soft sound", "definition": "To make a low, continuous, gentle sound.", "examples": ["The crowd murmured while the judge read the verdict.", "A breeze murmured through the pine trees."]}
+  ], "usage": "As a noun, a murmur is the soft sound or quiet speech itself: 'a murmur of agreement'.", "synonyms": ["mumble", "whisper", "mutter"], "antonyms": ["shout"]},
+  {"word": "puddle", "pos": "noun", "meanings": [
+    {"label": "small pool", "definition": "A small pool of water, especially rainwater, lying on the ground or in a hollow.", "examples": ["Children love jumping into puddles in their rubber boots.", "The dog shook the puddle water off its fur."]}
+  ], "synonyms": ["pool"], "antonyms": []},
+  {"word": "courage", "pos": "noun", "meanings": [
+    {"label": "bravery", "definition": "The ability to do something that frightens you; strength in the face of pain, danger, or grief.", "examples": ["It took real courage to stand up and speak against the plan.", "She showed great courage during her long illness."]}
+  ], "usage": "'Have the courage of your convictions' means to act boldly on what you believe.", "synonyms": ["bravery", "boldness", "nerve"], "antonyms": ["cowardice", "fear"]},
+  {"word": "saffron", "pos": "noun", "meanings": [
+    {"label": "spice", "definition": "The dried orange threads of a crocus flower, used to colour and flavour food; the most expensive spice in the world.", "examples": ["A pinch of saffron gives paella its golden colour."]},
+    {"label": "colour", "definition": "A deep orange-yellow colour, like the spice.", "examples": ["Monks in saffron robes walked silently through the temple grounds."]}
+  ], "synonyms": [], "antonyms": []},
+  {"word": "tremble", "pos": "verb", "meanings": [
+    {"label": "shake with fear or cold", "definition": "To shake slightly in a way you cannot control, because of fear, cold, or weakness.", "examples": ["Her hands trembled as she opened the letter.", "The puppies trembled in the cold doorway."]},
+    {"label": "quiver", "definition": "(Of things) to shake or move with small, quick movements.", "examples": ["Leaves trembled on the branches in the wind."]}
+  ], "synonyms": ["shake", "shiver", "quiver"], "antonyms": ["steady"]},
+  {"word": "dentist", "pos": "noun", "meanings": [
+    {"label": "teeth doctor", "definition": "A medical professional who examines, repairs, and takes care of people's teeth.", "examples": ["I have a dentist appointment on Thursday afternoon.", "The dentist said I should floss every day."]}
+  ], "synonyms": [], "antonyms": []},
+  {"word": "brisk", "pos": "adjective", "meanings": [
+    {"label": "quick and active", "definition": "Moving or acting quickly and energetically.", "examples": ["They set off at a brisk pace to catch the ferry.", "Business was brisk at the market on Saturday morning."]},
+    {"label": "crisp", "definition": "(Of weather or air) cold, clear, and refreshing.", "examples": ["A brisk autumn wind swept the leaves off the path."]}
+  ], "usage": "For a person's manner, 'brisk' can mean pleasantly efficient or, less kindly, curt.", "synonyms": ["quick", "energetic", "crisp"], "antonyms": ["slow", "sluggish"]},
+  {"word": "harvest", "pos": "verb", "meanings": [
+    {"label": "gather crops", "definition": "To cut and collect a crop from the fields when it is ripe.", "examples": ["The whole village helps harvest the rice in October.", "Wheat is harvested in late summer."]},
+    {"label": "take for use", "definition": "To collect or take something, such as organs, data, or energy, for a purpose.", "examples": ["Solar panels harvest energy directly from sunlight."]}
+  ], "usage": "As a noun, the harvest is both the activity and the crop that is gathered: 'a good harvest this year'.", "synonyms": ["gather", "reap", "collect"], "antonyms": ["plant", "sow"]},
+  {"word": "swift", "pos": "adjective", "meanings": [
+    {"label": "fast", "definition": "Moving or happening very quickly.", "examples": ["The police took swift action after the alarm was raised.", "A swift current carried the boat downstream."]}
+  ], "usage": "'Swift' is a little more literary than 'fast' or 'quick'.", "synonyms": ["quick", "rapid", "speedy"], "antonyms": ["slow", "gradual"]},
+  {"word": "shadow", "pos": "noun", "meanings": [
+    {"label": "dark shape", "definition": "A dark shape cast on a surface when something blocks the light.", "examples": ["The tree threw a long shadow across the lawn at sunset.", "She saw a shadow pass by the window."]},
+    {"label": "trace", "definition": "A very small amount or faint sign of something.", "examples": ["There is not a shadow of doubt in my mind about his honesty."]}
+  ], "usage": "'Someone's shadow' can mean a person who follows another everywhere; 'living in someone's shadow' means being overshadowed by a more famous or successful person.", "synonyms": ["silhouette", "trace"], "antonyms": ["light"]},
+  {"word": "forgive", "pos": "verb", "meanings": [
+    {"label": "stop resenting", "definition": "To stop being angry at someone for something wrong they did, and treat them as before.", "examples": ["She found it hard to forgive her brother for selling the car.", "Forgive me for interrupting, but there is a phone call for you."]},
+    {"label": "cancel a debt", "definition": "To officially cancel a debt or a required payment.", "examples": ["The bank agreed to forgive the remaining part of the loan."]}
+  ], "synonyms": ["pardon", "excuse"], "antonyms": ["blame", "punish"]},
+  {"word": "gratitude", "pos": "noun", "meanings": [
+    {"label": "thankfulness", "definition": "The feeling of being grateful and wanting to thank someone for their help or kindness.", "examples": ["He smiled with deep gratitude as the last guests left.", "She expressed her gratitude in a short, handwritten letter."]}
+  ], "usage": "'A debt of gratitude' is a strong feeling that you owe someone thanks.", "synonyms": ["thankfulness", "appreciation"], "antonyms": ["ingratitude"]},
+  {"word": "argue", "pos": "verb", "meanings": [
+    {"label": "give reasons", "definition": "To give reasons why you believe something is true, in speech or writing.", "examples": ["The lawyer argued that her client had been somewhere else that night.", "In the essay he argues for a simpler, cheaper design."]},
+    {"label": "disagree angrily", "definition": "To speak angrily to someone because you disagree with them.", "examples": ["The couple argued about money almost every week.", "Stop arguing and finish your homework."]}
+  ], "synonyms": ["debate", "dispute", "quarrel"], "antonyms": ["agree"]},
+  {"word": "bicycle", "pos": "noun", "meanings": [
+    {"label": "two-wheeled vehicle", "definition": "A road vehicle with two wheels that you ride by pushing its pedals with your feet.", "examples": ["She rides her bicycle to work even in winter.", "He repaired the bicycle's flat tyre in ten minutes."]}
+  ], "usage": "'Bike' is the everyday short form; 'cycle' can be a verb: 'she cycles to work'.", "synonyms": ["bike", "cycle"], "antonyms": []},
+  {"word": "sincere", "pos": "adjective", "meanings": [
+    {"label": "genuine", "definition": "Saying or showing what you really feel or believe, without pretending.", "examples": ["Please accept my sincere apologies for the mix-up.", "Her interest in the project seemed completely sincere."]}
+  ], "usage": "'Sincere' often appears before thanks, apologies, and condolences: 'sincere condolences'.", "synonyms": ["genuine", "heartfelt", "honest"], "antonyms": ["insincere", "fake"]},
+  {"word": "generous", "pos": "adjective", "meanings": [
+    {"label": "giving", "definition": "Willing to give money, help, or time freely, more than is expected.", "examples": ["It was generous of them to donate the entire prize to the school.", "A generous stranger paid for our coffee."]},
+    {"label": "more than enough", "definition": "Larger or kinder than necessary.", "examples": ["She served us a generous slice of homemade cake.", "The review was generous about the film's weak plot."]}
+  ], "synonyms": ["giving", "liberal", "plentiful"], "antonyms": ["stingy", "mean"]},
+  {"word": "light", "pos": "noun", "meanings": [
+    {"label": "brightness", "definition": "The energy from the sun or a lamp that makes it possible to see things.", "examples": ["Plants need light and water to grow.", "The room was filled with soft morning light."]},
+    {"label": "lamp", "definition": "A device that produces light, such as a lamp or an electric fitting.", "examples": ["Turn the light off when you leave the room.", "The street lights come on at dusk."]},
+    {"label": "understanding", "definition": "Knowledge or information that helps you understand something.", "examples": ["The new documents shed light on how the decision was made."]}
+  ], "usage": "'In light of' means considering: 'in light of the new evidence'. 'See the light' means to finally understand.", "synonyms": ["brightness", "lamp"], "antonyms": ["darkness"]},
+
+  {"word": "kick the bucket", "pos": "idiom", "meanings": [
+    {"label": "die", "definition": "To die. Informal and humorous, never polite in formal situations.", "examples": ["The old tractor finally kicked the bucket after thirty years of service.", "According to the film's plot, the villain kicks the bucket in the final scene."]}
+  ], "usage": "Casual or comic; say 'passed away' when being respectful.", "synonyms": ["die", "pass away"], "antonyms": []},
+  {"word": "spill the beans", "pos": "idiom", "meanings": [
+    {"label": "reveal a secret", "definition": "To tell people secret information, often by accident or before you should.", "examples": ["Ben spilled the beans about the surprise party two days early.", "Whoever spilled the beans to the press cost the company the deal."]}
+  ], "synonyms": ["blab", "let slip"], "antonyms": ["keep quiet", "keep a secret"]},
+  {"word": "break a leg", "pos": "idiom", "meanings": [
+    {"label": "good luck", "definition": "A way of wishing a performer good luck before a show. Saying 'good luck' directly is considered bad luck in theatre.", "examples": ["You go on stage in five minutes? Break a leg!", "I told my daughter to break a leg before her piano recital."]}
+  ], "synonyms": [], "antonyms": []},
+  {"word": "under the weather", "pos": "idiom", "meanings": [
+    {"label": "slightly ill", "definition": "Feeling a little sick, tired, or not your usual self; mildly unwell rather than seriously ill.", "examples": ["I'm feeling a bit under the weather, so I'll skip the party tonight.", "She stayed home from school because she was under the weather."]}
+  ], "synonyms": ["unwell", "off-colour"], "antonyms": ["fit as a fiddle"]},
+  {"word": "piece of cake", "pos": "idiom", "meanings": [
+    {"label": "very easy", "definition": "Something that is very easy to do.", "examples": ["The driving test was a piece of cake after all that practice.", "You think the exam will be hard? It's a piece of cake."]}
+  ], "usage": "Usually used with 'be': 'that job was a piece of cake'.", "synonyms": ["easy", "a breeze"], "antonyms": ["tall order"]},
+  {"word": "once in a blue moon", "pos": "idiom", "meanings": [
+    {"label": "very rarely", "definition": "Very seldom; almost never.", "examples": ["We see each other once in a blue moon since she moved abroad.", "Once in a blue moon he treats himself to an expensive dinner."]}
+  ], "synonyms": ["rarely", "hardly ever"], "antonyms": ["all the time"]},
+  {"word": "the last straw", "pos": "idiom", "meanings": [
+    {"label": "final unbearable thing", "definition": "The last in a series of bad things that finally makes a situation impossible to accept.", "examples": ["Losing the keys was the last straw after a day of delays.", "One more rude email and that will be the last straw."]}
+  ], "usage": "From the saying 'it is the last straw that breaks the camel's back'.", "synonyms": [], "antonyms": []},
+  {"word": "when pigs fly", "pos": "idiom", "meanings": [
+    {"label": "never", "definition": "Never; used to say that you believe something will absolutely not happen.", "examples": ["He says he'll clean his room when pigs fly.", "I'll apologize to her when pigs fly."]}
+  ], "usage": "Informal and joking; often the answer to a question about a very unlikely event.", "synonyms": ["never"], "antonyms": []},
+
+  {"word": "long time no see", "pos": "phrase", "meanings": [
+    {"label": "greeting", "definition": "A friendly greeting to someone you have not seen for a long time.", "examples": ["Long time no see! How have you been?", "Well, long time no see — the last time we met was at Sam's wedding."]}
+  ], "synonyms": [], "antonyms": []},
+  {"word": "your guess is as good as mine", "pos": "phrase", "meanings": [
+    {"label": "I don't know either", "definition": "Used to say that you know no more about something than the person asking you.", "examples": ["'When will the bus arrive?' — 'Your guess is as good as mine.'", "Why the meeting was cancelled, your guess is as good as mine."]}
+  ], "synonyms": [], "antonyms": []},
+  {"word": "better safe than sorry", "pos": "phrase", "meanings": [
+    {"label": "caution is wise", "definition": "It is wiser to be careful and take precautions than to risk something going badly wrong.", "examples": ["Take an umbrella — better safe than sorry.", "I know it's a detour, but check the locks again; better safe than sorry."]}
+  ], "synonyms": [], "antonyms": []},
+  {"word": "out of sight, out of mind", "pos": "phrase", "meanings": [
+    {"label": "forgotten when absent", "definition": "You quickly stop thinking about people or things that are no longer near you or in your life.", "examples": ["Once he moved to Perth, out of sight, out of mind — nobody called him anymore.", "Keep the snacks on a high shelf: out of sight, out of mind."]}
+  ], "synonyms": [], "antonyms": []},
+
+  {"word": "colporteur", "pos": "noun", "meanings": [
+    {"label": "book peddler", "definition": "A person who travels from place to place selling books and pamphlets, especially religious literature.", "examples": ["In the 1800s, a colporteur might carry a full case of Bibles from village to village."]}
+  ], "usage": "Historical word; from French 'colporter', to peddle.", "synonyms": ["peddler", "hawker"], "antonyms": []},
+  {"word": "susurrus", "pos": "noun", "meanings": [
+    {"label": "whispering sound", "definition": "A soft, whispering or rustling sound, like wind in leaves.", "examples": ["We fell asleep to the susurrus of the stream below the tent."]}
+  ], "usage": "Literary; from Latin 'susurrare', to whisper.", "synonyms": ["rustle", "whisper"], "antonyms": []},
+  {"word": "apricity", "pos": "noun", "meanings": [
+    {"label": "winter sun warmth", "definition": "The warmth of the sun on a cold winter day.", "examples": ["The cat found a patch of apricity on the windowsill."]}
+  ], "usage": "An obsolete English word, revived by word-lovers; do not expect everyone to know it.", "synonyms": [], "antonyms": []},
+  {"word": "aglet", "pos": "noun", "meanings": [
+    {"label": "shoelace tip", "definition": "The small plastic or metal tube at the end of a shoelace that stops it from fraying and helps it pass through the eyelets.", "examples": ["The aglet came off, and the lace frayed into threads."]}
+  ], "synonyms": [], "antonyms": []},
+  {"word": "petrichor", "pos": "noun", "meanings": [
+    {"label": "smell of rain", "definition": "The pleasant, earthy smell that rises from the ground when rain falls after dry weather.", "examples": ["The first drops brought petrichor drifting up from the dusty field."]}
+  ], "usage": "From Greek 'petra' (stone) and 'ichor', the fluid said to run in the veins of the gods.", "synonyms": [], "antonyms": []},
+  {"word": "defenestration", "pos": "noun", "meanings": [
+    {"label": "throwing out a window", "definition": "The act of throwing someone or something out of a window.", "examples": ["The Defenestration of Prague in 1618 helped start the Thirty Years' War."]}
+  ], "usage": "From Latin 'de-' (out of) and 'fenestra' (window); often used humorously about software or objects: 'led to the defenestration of the old system'.", "synonyms": [], "antonyms": []},
+
+  {"word": "flumbrelate", "abstain": true},
+  {"word": "quorbing", "abstain": true},
+  {"word": "glimberdash", "abstain": true},
+  {"word": "vantrel", "abstain": true},
+  {"word": "trivulent", "abstain": true},
+  {"word": "scorrow", "abstain": true},
+  {"word": "bellingwether", "abstain": true},
+  {"word": "cramulent", "abstain": true},
+
+  {"word": "harvast", "pos": "verb", "meanings": [
+    {"label": "gather crops", "definition": "To cut and collect a crop from the fields when it is ripe.", "examples": ["The whole village helps harvest the rice in October.", "Wheat is harvested in late summer."]},
+    {"label": "take for use", "definition": "To collect or take something, such as organs, data, or energy, for a purpose.", "examples": ["Solar panels harvest energy directly from sunlight."]}
+  ], "usage": "A common misspelling of 'harvest'.", "synonyms": ["gather", "reap", "collect"], "antonyms": ["plant", "sow"]},
+  {"word": "shaddow", "pos": "noun", "meanings": [
+    {"label": "dark shape", "definition": "A dark shape cast on a surface when something blocks the light.", "examples": ["The tree threw a long shadow across the lawn at sunset.", "She saw a shadow pass by the window."]},
+    {"label": "trace", "definition": "A very small amount or faint sign of something.", "examples": ["There is not a shadow of doubt in my mind about his honesty."]}
+  ], "usage": "A common misspelling of 'shadow'.", "synonyms": ["silhouette", "trace"], "antonyms": ["light"]},
+  {"word": "curage", "pos": "noun", "meanings": [
+    {"label": "bravery", "definition": "The ability to do something that frightens you; strength in the face of pain, danger, or grief.", "examples": ["It took real courage to stand up and speak against the plan.", "She showed great courage during her long illness."]}
+  ], "usage": "A misspelling of 'courage'.", "synonyms": ["bravery", "boldness", "nerve"], "antonyms": ["cowardice", "fear"]},
+  {"word": "trembel", "pos": "verb", "meanings": [
+    {"label": "shake with fear or cold", "definition": "To shake slightly in a way you cannot control, because of fear, cold, or weakness.", "examples": ["Her hands trembled as she opened the letter.", "The puppies trembled in the cold doorway."]}
+  ], "usage": "A misspelling of 'tremble'.", "synonyms": ["shake", "shiver", "quiver"], "antonyms": ["steady"]},
+  {"word": "genourous", "pos": "adjective", "meanings": [
+    {"label": "giving", "definition": "Willing to give money, help, or time freely, more than is expected.", "examples": ["It was generous of them to donate the entire prize to the school.", "A generous stranger paid for our coffee."]},
+    {"label": "more than enough", "definition": "Larger or kinder than necessary.", "examples": ["She served us a generous slice of homemade cake.", "The review was generous about the film's weak plot."]}
+  ], "usage": "A misspelling of 'generous'.", "synonyms": ["giving", "liberal", "plentiful"], "antonyms": ["stingy", "mean"]},
+  {"word": "ephimereal", "pos": "adjective", "meanings": [
+    {"label": "short-lived", "definition": "Lasting for only a very short time, and soon gone or forgotten.", "examples": ["Fame on the internet is often ephemeral: a video can be everywhere today and forgotten next week.", "Cherry blossoms are ephemeral, which is exactly what makes them so treasured."]}
+  ], "usage": "A misspelling of 'ephemeral'.", "synonyms": ["fleeting", "transient", "momentary"], "antonyms": ["lasting", "permanent"]}
+ ]
+}

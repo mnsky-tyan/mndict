@@ -118,8 +118,12 @@ llama-bin/
 
 # Training venv and outputs
 training/.venv/
-training/out/
+training/out*/
 training/ckpt/
+
+# Local HF model checkouts for training (weights already ignored; configs and
+# tokenizer are re-downloadable from the hub, don't track copies)
+training/models/
 
 # Bake-off eval outputs (JSONL runs, logs)
 training/eval_out/
