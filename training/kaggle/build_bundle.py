@@ -38,10 +38,11 @@ def main():
             "**Run -> Run all cells.** Output: `gemma-4-E2B-pilot-q4_0.gguf` (~2.6 GB)."
         ),
         code(
-            "# Pins keep Kaggle's preinstalled CUDA torch pair: an unpinned -U once\n"
-            "# pulled torch 2.11.0+cpu (CPU build!) and broke training + torchvision.\n"
+            "# torch 2.7.1+cu126 supports BOTH Kaggle GPUs (P100 sm_60 AND T4 sm_75):\n"
+            "# newer cu128 wheels (2.9+) dropped Pascal, and unpinned -U pulls +cpu builds.\n"
             "%pip install -q -U peft accelerate bitsandbytes sentencepiece protobuf\n"
-            "%pip install -q \"transformers==5.16.1\" \"torch==2.10.0\" \"torchvision==0.25.0\"\n"
+            '%pip install -q "transformers==5.16.1" "torch==2.7.1+cu126" "torchvision==0.22.1+cu126" '
+            "--extra-index-url https://download.pytorch.org/whl/cu126\n"
             "import transformers, peft, torch\n"
             "print('transformers', transformers.__version__, '| peft', peft.__version__, '| torch', torch.__version__, '| cuda', torch.cuda.is_available())"
         ),
@@ -60,8 +61,9 @@ def main():
             "!git clone --depth 1 --branch b10798 https://github.com/ggml-org/llama.cpp /tmp/llama.cpp\n"
             "%pip install -q -r /tmp/llama.cpp/requirements.txt\n"
             "# llama.cpp's requirements can bump torch (it once pulled 2.11.0+cpu!) —\n"
-            "# re-pin the CUDA pair afterwards.\n"
-            "%pip install -q \"torch==2.10.0\" \"torchvision==0.25.0\"\n"
+            "# re-pin the Pascal+Turing-capable CUDA pair afterwards.\n"
+            '%pip install -q "torch==2.7.1+cu126" "torchvision==0.22.1+cu126" '
+            "--extra-index-url https://download.pytorch.org/whl/cu126\n"
             "print('llama.cpp b10798 ready')"
         ),
         code("%%writefile train_kaggle.py\n" + script),
