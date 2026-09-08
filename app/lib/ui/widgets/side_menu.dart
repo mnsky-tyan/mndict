@@ -213,7 +213,8 @@ class _SideMenuState extends State<SideMenu> {
                       child: Pressable(
                         onTap: () async {
                           final isDownloaded = await _downloader
-                              .isModelDownloaded(model.filename);
+                              .isModelDownloaded(model.filename,
+                                  expectedMB: model.sizeMB);
                           if (isDownloaded) {
                             _selectModel(model);
                           } else {

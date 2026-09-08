@@ -22,6 +22,20 @@ class DictionaryService {
 
   DictionaryService(this.settings);
 
+  /// Stream sinks that survive dispose: a lookup's 120 s timeout can fire
+  /// after teardown, and pushing into a closed controller throws.
+  void _emitToken(String token) {
+    if (!_tokenStreamController.isClosed) _tokenStreamController.add(token);
+  }
+
+  void _emitTokenError(Object e) {
+    if (!_tokenStreamController.isClosed) _tokenStreamController.addError(e);
+  }
+
+  void _emitStatus(String status) {
+    if (!_statusStreamController.isClosed) _statusStreamController.add(status);
+  }
+
   Future<void> init() async {
     await _llama.spawn();
     
@@ -38,9 +52,11 @@ class DictionaryService {
 
   Future<void> checkAndLoadModel() async {
     final filename = settings.selectedModelFilename;
-    _statusStreamController.add("Checking model: $filename");
+    _emitStatus("Checking model: $filename");
 
-    final isDownloaded = await _downloader.isModelDownloaded(filename);
+    final config = settings.currentModelConfig;
+    final isDownloaded = await _downloader.isModelDownloaded(filename,
+        expectedMB: config.filename == filename ? config.sizeMB : null);
     if (isDownloaded) {
       final path = await _downloader.getModelPath(filename);
       if (!isModelLoaded || _currentModelPath != path) {
@@ -49,7 +65,7 @@ class DictionaryService {
       // Speculative-decoding draft: fetch once in the background if missing.
       _ensureDraftDownloaded();
     } else {
-      _statusStreamController.add("Model not found. Please download in settings.");
+      _emitStatus("Model not found. Please download in settings.");
       isModelLoaded = false;
     }
   }
@@ -58,13 +74,16 @@ class DictionaryService {
     final config = settings.currentModelConfig;
     final draftName = config.draftFilename;
     if (!config.specDecoding || draftName == null || config.draftUrl == null) return;
-    if (await _downloader.isModelDownloaded(draftName)) return;
-    _statusStreamController.add("Downloading draft model (${config.draftSizeMB} MB)...");
+    if (await _downloader.isModelDownloaded(draftName,
+        expectedMB: config.draftSizeMB)) {
+      return;
+    }
+    _emitStatus("Downloading draft model (${config.draftSizeMB} MB)...");
     try {
       await _downloader.downloadModel(config.draftUrl!, draftName, (_) {});
-      _statusStreamController.add("Draft model ready");
+      _emitStatus("Draft model ready");
     } catch (e) {
-      _statusStreamController.add("Draft download failed (decoding unaffected)");
+      _emitStatus("Draft download failed (decoding unaffected)");
     }
   }
 
@@ -72,12 +91,15 @@ class DictionaryService {
     final config = settings.currentModelConfig;
     final draftName = config.draftFilename;
     if (!config.specDecoding || draftName == null) return null;
-    if (!await _downloader.isModelDownloaded(draftName)) return null;
+    if (!await _downloader.isModelDownloaded(draftName,
+        expectedMB: config.draftSizeMB)) {
+      return null;
+    }
     return _downloader.getModelPath(draftName);
   }
 
   Future<void> loadModel(String path) async {
-    _statusStreamController.add("Loading Model...");
+    _emitStatus("Loading Model...");
     final draftPath = await _draftPathOrNull();
     try {
       await _llama.loadModel(
@@ -90,14 +112,14 @@ class DictionaryService {
       );
       isModelLoaded = true;
       _currentModelPath = path;
-      _statusStreamController.add("Model Loaded");
-      
+      _emitStatus("Model Loaded");
+
       // Warmup to ensure first token is fast
-      _statusStreamController.add("Warming up...");
+      _emitStatus("Warming up...");
       await _llama.warmup();
-      _statusStreamController.add("Ready");
+      _emitStatus("Ready");
     } catch (e) {
-      _statusStreamController.add("Failed to load model: $e");
+      _emitStatus("Failed to load model: $e");
       isModelLoaded = false;
       // Self-heal: a corrupt/partial file fails native load every time it is
       // selected. Delete it so the next attempt re-downloads — but only when
@@ -108,7 +130,7 @@ class DictionaryService {
           final f = File(path);
           if (await f.exists()) {
             await f.delete();
-            _statusStreamController.add("Corrupt model file deleted. Download it again.");
+            _emitStatus("Corrupt model file deleted. Download it again.");
           }
         } catch (_) {}
       }
@@ -127,7 +149,7 @@ class DictionaryService {
 
   Future<void> searchWord(String word) async {
     if (!isModelLoaded) {
-      _tokenStreamController.addError("Model not loaded");
+      _emitTokenError("Model not loaded");
       return;
     }
     if (isGenerating) return;
@@ -171,7 +193,7 @@ class DictionaryService {
             // If there is content after </think>, we should stream it.
             final parts = token.split("</think>");
             if (parts.length > 1) {
-              _tokenStreamController.add(parts[1]);
+              _emitToken(parts[1]);
             }
             return;
           }
@@ -181,9 +203,9 @@ class DictionaryService {
       }
       
       // Stream directly to UI
-      _tokenStreamController.add(token);
+      _emitToken(token);
     }, onError: (e) {
-      _tokenStreamController.addError(e);
+      _emitTokenError(e);
       if (!completer.isCompleted) completer.complete(); // Stop waiting on error
     });
 
@@ -213,9 +235,9 @@ class DictionaryService {
       
     } catch (e) {
       if (e is TimeoutException) {
-        _tokenStreamController.add("\n[Generation timed out]");
+        _emitToken("\n[Generation timed out]");
       } else {
-        _tokenStreamController.addError(e);
+        _emitTokenError(e);
       }
     } finally {
       isGenerating = false;

@@ -82,10 +82,15 @@ class AppSettings {
     ),
     ModelConfig(
       name: 'Gemma 4 E2B (QAT)',
-      url: 'https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-gguf/resolve/main/gemma-4-E2B_q4_0-it.gguf',
+      // 2026-09 bake-off WINNER: 84/84 zero-shot entry-format compliance, best
+      // prose tested. 5.1B raw / ~2.3B effective (PLE): 2B-class decode speed,
+      // 3.35GB RAM. LAN URL = dev PC mirror; the HF URL still works as before.
+      // Abstention (None policy) NOT trained yet — made-up words get confident
+      // definitions until the E2B pilot LoRA lands.
+      url: 'http://192.168.0.116:8090/gemma-4-E2B_q4_0-it.gguf',
       filename: 'gemma-4-E2B_q4_0-it.gguf',
       promptStyle: PromptStyle.gemma4,
-      sizeMB: 3350,
+      sizeMB: 3195,
     ),
     ModelConfig(
       name: 'LFM2.5 8B-A1B',

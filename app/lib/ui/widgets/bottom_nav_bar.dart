@@ -23,8 +23,12 @@ class GlassBottomNavBar extends StatelessWidget {
       (FontAwesomeIcons.magnifyingGlass, 'Search'),
       (FontAwesomeIcons.bookOpen, 'Vocabulary'),
       (FontAwesomeIcons.graduationCap, 'Test'),
-      (FontAwesomeIcons.house, 'Farm'),
+      (FontAwesomeIcons.paw, 'Farm'),
     ];
+    // The farm slot is a launch pad, not a tab: it opens the farm as its
+    // own full-screen mode, so it wears its own pasture-green instead of
+    // the lens accent. The lens itself only travels tabs 0..2.
+    const portalColor = Color(0xFF5FA85C);
 
     return RepaintBoundary(
       child: GlassContainer(
@@ -94,6 +98,7 @@ class GlassBottomNavBar extends StatelessWidget {
                               label: label,
                               index: i,
                               currentIndex: active,
+                              portalColor: i == 3 ? portalColor : null,
                               onTap: onTap,
                             ),
                         ],
@@ -116,6 +121,11 @@ class _NavItem extends StatefulWidget {
   final String label;
   final int index;
   final int currentIndex;
+
+  /// When set, the item is a launch pad for another mode: it wears this
+  /// color (icon, label, and a soft always-on capsule) instead of the
+  /// sliding lens treatment.
+  final Color? portalColor;
   final Function(int) onTap;
 
   const _NavItem({
@@ -125,6 +135,7 @@ class _NavItem extends StatefulWidget {
     required this.index,
     required this.currentIndex,
     required this.onTap,
+    this.portalColor,
   });
 
   @override
@@ -137,8 +148,10 @@ class _NavItemState extends State<_NavItem> {
   @override
   Widget build(BuildContext context) {
     final p = widget.palette;
+    final portal = widget.portalColor;
     final isActive = widget.index == widget.currentIndex;
-    final fg = isActive ? p.accent : p.textSecondary;
+    final fg = portal ??
+        (isActive ? p.accent : p.textSecondary);
 
     return Expanded(
       child: GestureDetector(
@@ -155,38 +168,66 @@ class _NavItemState extends State<_NavItem> {
           curve: Curves.easeOut,
           child: SizedBox(
             height: 60,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
-                AnimatedScale(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeOutBack,
-                  scale: isActive ? 1.12 : 1.0,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    transitionBuilder: (child, anim) => FadeTransition(
-                      opacity: anim,
-                      child: ScaleTransition(scale: anim, child: child),
-                    ),
-                    child: FaIcon(
-                      widget.icon,
-                      key: ValueKey(isActive),
-                      color: fg,
-                      size: isActive ? 18 : 16,
+                // The launch pad's own tint — a quieter cousin of the
+                // lens, always on, so "this leaves the app" reads at a
+                // glance.
+                if (portal != null)
+                  Positioned.fill(
+                    child: Center(
+                      child: Container(
+                        height: 52,
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          color: portal.withValues(
+                              alpha: p.isDark ? 0.16 : 0.11),
+                          border: Border.all(
+                            color: portal.withValues(alpha: 0.22),
+                            width: 1,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 3),
-                AnimatedDefaultTextStyle(
-                  duration: const Duration(milliseconds: 240),
-                  style: GlassText.body(
-                    p,
-                    10,
-                    weight: isActive ? FontWeight.w600 : FontWeight.w500,
-                    tracking: 0.2,
-                    color: fg,
+                Positioned.fill(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      AnimatedScale(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutBack,
+                        scale: isActive ? 1.12 : 1.0,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          transitionBuilder: (child, anim) => FadeTransition(
+                            opacity: anim,
+                            child: ScaleTransition(scale: anim, child: child),
+                          ),
+                          child: FaIcon(
+                            widget.icon,
+                            key: ValueKey(isActive),
+                            color: fg,
+                            size: isActive ? 18 : 16,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 240),
+                        style: GlassText.body(
+                          p,
+                          10,
+                          weight: isActive ? FontWeight.w600 : FontWeight.w500,
+                          tracking: 0.2,
+                          color: fg,
+                        ),
+                        child: Text(widget.label),
+                      ),
+                    ],
                   ),
-                  child: Text(widget.label),
                 ),
               ],
             ),

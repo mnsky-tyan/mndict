@@ -17,9 +17,21 @@ class ModelDownloader {
     return '$path/$filename';
   }
 
-  Future<bool> isModelDownloaded(String filename) async {
+  /// Whether the model can be loaded from disk. Existence alone is not
+  /// enough: a truncated transfer (e.g. a file left by an older build, or
+  /// sideloaded over adb) passes an existence check and then fails native
+  /// load with a confusing "generation failed: -1". When the catalog's
+  /// expected size is known, require ~all of the bytes.
+  Future<bool> isModelDownloaded(String filename, {double? expectedMB}) async {
     final path = await getModelPath(filename);
-    return File(path).exists();
+    final file = File(path);
+    if (!await file.exists()) return false;
+    if (expectedMB != null && expectedMB > 0) {
+      // 5% head-room: sizes in ModelConfig are rounded.
+      final minBytes = expectedMB * 1024 * 1024 * 0.95;
+      if (await file.length() < minBytes) return false;
+    }
+    return true;
   }
 
   Future<void> downloadModel(String url, String filename, Function(double) onProgress) async {

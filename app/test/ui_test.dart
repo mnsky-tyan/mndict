@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:app/ui/glass_dictionary_app.dart';
 import 'package:app/ui/widgets/glass_page.dart' show GlassIconButton;
 import 'package:app/ui/widgets/search_bar.dart';
@@ -51,7 +52,7 @@ void main() {
     expect(find.byType(SideMenu), findsOneWidget);
   });
 
-  testWidgets('switching tabs fades to the new page content', (WidgetTester tester) async {
+  testWidgets('the farm opens as its own full-screen mode and exits via its door', (WidgetTester tester) async {
     GoogleFonts.config.allowRuntimeFetching = false;
     SharedPreferences.setMockInitialValues({});
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -64,38 +65,35 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump(const Duration(milliseconds: 400));
 
-    // Tap the Farm tab (non-adjacent switch) via the nav bar and let the
-    // fade-through play.
+    // Tap the Farm launch pad in the nav bar. It is not a tab: the farm
+    // pushes over the whole shell with an app-launch transition. The farm
+    // animates forever, so fixed pumps, never pumpAndSettle.
     await tester.tap(find.descendant(
       of: find.byType(GlassBottomNavBar),
       matching: find.text('Farm'),
     ));
     await tester.pump(const Duration(milliseconds: 120));
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 700));
 
-    // The farm renders its Market button. A first run gifts the Truffle
-    // starter, so the pen already holds 1/12 pigs — no invitation card.
-    // The farm animates forever, so no pumpAndSettle.
+    // First run gifts the Truffle starter, so the pen already holds 1/12.
     expect(find.text('Pig Market'), findsOneWidget);
     expect(find.text('My Farm'), findsOneWidget);
     expect(find.text('Your farm is waiting'), findsNothing);
     expect(find.text('1/12'), findsOneWidget);
 
-    // The search field is Search-tab-only: on Farm the top bar shows the
-    // tab title instead (nav label + top-bar title both say 'Farm').
+    // Farm mode covers the dictionary — no search field, no nav bar. The
+    // way out is the door button in the farm's pill row.
     expect(find.byType(GlassSearchBar), findsNothing);
-    expect(find.text('Farm'), findsNWidgets(2));
+    expect(find.byType(GlassBottomNavBar), findsNothing);
+    expect(find.byIcon(FontAwesomeIcons.doorOpen), findsOneWidget);
 
-    // Back to Search: the field returns.
-    await tester.tap(find.descendant(
-      of: find.byType(GlassBottomNavBar),
-      matching: find.text('Search'),
-    ));
+    // Leave through the door: back to the dictionary, bars and all.
+    await tester.tap(find.byIcon(FontAwesomeIcons.doorOpen));
     await tester.pump(const Duration(milliseconds: 120));
-    await tester.pump(const Duration(milliseconds: 300));
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.byType(GlassSearchBar), findsOneWidget);
+    expect(find.byType(GlassBottomNavBar), findsOneWidget);
   });
 
   testWidgets('dragging the page area scrubs to the neighboring tab', (WidgetTester tester) async {

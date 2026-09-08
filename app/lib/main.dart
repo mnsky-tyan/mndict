@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'ui/glass_dictionary_app.dart';
+import 'ui/widgets/reward_chips.dart' show kRewardRouteObserver;
 
 void main() {
   runApp(const MyApp());
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'mndict',
       debugShowCheckedModeBanner: false,
+      navigatorObservers: [kRewardRouteObserver],
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF3D6BFF)),
         useMaterial3: true,

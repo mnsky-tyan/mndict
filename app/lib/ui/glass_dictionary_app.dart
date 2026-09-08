@@ -20,8 +20,9 @@ import 'widgets/pressable.dart';
 import 'widgets/search_bar.dart';
 import 'widgets/side_menu.dart';
 import 'widgets/vocabulary_detail_popup.dart';
-import 'screens/farm_view.dart';
+import 'screens/farm_mode_screen.dart';
 import 'screens/test_screen.dart';
+import 'widgets/reward_chips.dart';
 
 class GlassDictionaryApp extends StatefulWidget {
   const GlassDictionaryApp({super.key});
@@ -64,7 +65,7 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
     duration: const Duration(milliseconds: 380),
     value: 0,
     lowerBound: -0.5,
-    upperBound: 3.5,
+    upperBound: 2.5,
   );
 
   // Streaming tokens go through this notifier so only the definition card
@@ -211,6 +212,13 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
     // Leaving the field — by tab switch or by tapping the active tab —
     // always drops the keyboard.
     _dismissKeyboard();
+    // The farm is not a tab: it takes over the whole screen as its own
+    // mode, entered through this launch pad and left via its door button.
+    if (index == 3) {
+      HapticFeedback.mediumImpact();
+      _openFarm();
+      return;
+    }
     if (index != _currentIndex) {
       HapticFeedback.selectionClick();
       setState(() {
@@ -225,6 +233,18 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
       duration: const Duration(milliseconds: 380),
       curve: Curves.easeOutCubic,
     );
+  }
+
+  /// Enter farm mode: the pig world pushes over everything, its own
+  /// screen, its own rules — like opening a second app.
+  void _openFarm() {
+    Navigator.of(context).push(FarmModeScreen.route(
+      settings: _settings,
+      pigs: _pigService,
+      profile: _farmProfile,
+      wordCount:
+          _vocabularyService.getSortedWords(SortType.latest, true).length,
+    ));
   }
 
   /// The page drag began — the pager handles the scrub itself; the app only
@@ -250,7 +270,7 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.only(left: 6),
       child: Text(
-        const ['', 'Vocabulary', 'Test', 'Farm'][i],
+        const ['', 'Vocabulary', 'Test'][i],
         style: GlassText.display(p, 20, weight: FontWeight.w600),
       ),
     );
@@ -414,12 +434,12 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
                                         builder: (context, _) {
                                           final v = _pagesC.value.clamp(
                                             0.0,
-                                            3.0,
+                                            2.0,
                                           );
                                           return Stack(
                                             alignment: Alignment.centerLeft,
                                             children: [
-                                              for (var i = 0; i < 4; i++)
+                                              for (var i = 0; i < 3; i++)
                                                 if ((v - i).abs() < 0.5)
                                                   IgnorePointer(
                                                     ignoring:
@@ -567,20 +587,6 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
                                           ),
                                         ),
                                       ),
-
-                                      // Tab 3: Farm — the pig world where
-                                      // learning rewards come to life.
-                                      SizedBox.expand(
-                                        child: FarmView(
-                                          settings: _settings,
-                                          pigs: _pigService,
-                                          profile: _farmProfile,
-                                          wordCount: _vocabularyService
-                                              .getSortedWords(
-                                                  SortType.latest, true)
-                                              .length,
-                                        ),
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -607,7 +613,7 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
                       left: 0,
                       right: 0,
                       child: IgnorePointer(
-                        child: _RewardChips(profile: _farmProfile),
+                        child: RewardChips(profile: _farmProfile),
                       ),
                     ),
                     // Vocabulary detail bottom sheet
@@ -1208,116 +1214,4 @@ class _PageLayer extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Farm reward crumbs — the visible thread from studying to the farm.
 // ---------------------------------------------------------------------------
-
-class _ChipData {
-  final int id;
-  final String label;
-  final bool celebrate;
-  _ChipData(this.id, this.label, this.celebrate);
-}
-
-class _RewardChips extends StatefulWidget {
-  final FarmProfile profile;
-
-  const _RewardChips({required this.profile});
-
-  @override
-  State<_RewardChips> createState() => _RewardChipsState();
-}
-
-class _RewardChipsState extends State<_RewardChips> {
-  final List<_ChipData> _chips = [];
-  var _nextId = 1;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.profile.addListener(_drain);
-    _drain();
-  }
-
-  @override
-  void didUpdateWidget(_RewardChips old) {
-    super.didUpdateWidget(old);
-    if (old.profile != widget.profile) {
-      old.profile.removeListener(_drain);
-      widget.profile.addListener(_drain);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.profile.removeListener(_drain);
-    super.dispose();
-  }
-
-  void _drain() {
-    final rewards = widget.profile.takeRewards();
-    if (rewards.isEmpty || !mounted) return;
-    setState(() {
-      for (final r in rewards) {
-        final chip = _ChipData(_nextId++, r.label, r.celebrate);
-        _chips.add(chip);
-        // Each crumb lives briefly, then fades itself out.
-        Future.delayed(
-          Duration(milliseconds: r.celebrate ? 3200 : 1900),
-          () {
-            if (!mounted) return;
-            setState(() => _chips.removeWhere((c) => c.id == chip.id));
-          },
-        );
-      }
-      // Never let a burst bury the screen.
-      while (_chips.length > 4) {
-        _chips.removeAt(0);
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_chips.isEmpty) return const SizedBox.shrink();
-    final p = GlassScope.of(context).palette;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final chip in _chips)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: TweenAnimationBuilder<double>(
-              key: ValueKey(chip.id),
-              tween: Tween(begin: 0.0, end: 1.0),
-              duration: const Duration(milliseconds: 260),
-              curve: Curves.easeOutBack,
-              builder: (context, t, child) => Opacity(
-                opacity: t.clamp(0.0, 1.0),
-                child: Transform.scale(scale: 0.7 + 0.3 * t, child: child),
-              ),
-              child: GlassContainer(
-                blur: 0,
-                chrome: !chip.celebrate,
-                solid: chip.celebrate,
-                sheen: false,
-                borderRadius: 999,
-                padding: EdgeInsets.symmetric(
-                    horizontal: 14, vertical: chip.celebrate ? 9 : 6),
-                child: Text(
-                  chip.label,
-                  style: GlassText.body(
-                    p,
-                    chip.celebrate ? 13 : 12,
-                    weight: FontWeight.w800,
-                    color: chip.celebrate
-                        ? (p.isDark
-                            ? const Color(0xFF0B1020)
-                            : Colors.white)
-                        : p.textPrimary,
-                  ),
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
+// (Moved to ui/widgets/reward_chips.dart, shared with farm mode.)
