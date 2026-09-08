@@ -59,6 +59,9 @@ def main():
         code(
             "!git clone --depth 1 --branch b10798 https://github.com/ggml-org/llama.cpp /tmp/llama.cpp\n"
             "%pip install -q -r /tmp/llama.cpp/requirements.txt\n"
+            "# llama.cpp's requirements can bump torch (it once pulled 2.11.0+cpu!) —\n"
+            "# re-pin the CUDA pair afterwards.\n"
+            "%pip install -q \"torch==2.10.0\" \"torchvision==0.25.0\"\n"
             "print('llama.cpp b10798 ready')"
         ),
         code("%%writefile train_kaggle.py\n" + script),
