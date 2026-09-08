@@ -18,19 +18,13 @@ import sys
 
 import torch
 
-# pip -U upgrades can leave Kaggle's preinstalled torch/torchvision pair
-# mismatched, which crashes transformers' own import (torchvision
-# ::nms register_fake). Realign torchvision BEFORE transformers/peft import.
-subprocess.run(
-    [sys.executable, "-m", "pip", "install", "-q", "-U", "torchvision"],
-    check=False,
+print(
+    f"torch {torch.__version__} | cuda available: {torch.cuda.is_available()} "
+    f"({torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'no GPU'})"
 )
-try:
-    import torchvision  # noqa: F401
-
-    print("torchvision", torchvision.__version__)
-except Exception as e:  # text-only training works without it
-    print("torchvision import failed (continuing):", e)
+# NOTE: torch/torchvision are PINNED in the notebook's pip cell (the Kaggle
+# image's CUDA pair, e.g. 2.10.0+cu128 / 0.25.0+cu128). An unpinned `pip -U`
+# here once replaced CUDA torch with a +cpu build and broke everything.
 
 from peft import LoraConfig, PeftModel, get_peft_model
 from torch.utils.data import Dataset
