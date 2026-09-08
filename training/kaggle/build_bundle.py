@@ -38,7 +38,7 @@ def main():
             "**Run -> Run all cells.** Output: `gemma-4-E2B-pilot-q4_0.gguf` (~2.6 GB)."
         ),
         code(
-            "%pip install -q -U transformers peft accelerate bitsandbytes sentencepiece protobuf\n"
+            "%pip install -q -U transformers peft accelerate bitsandbytes sentencepiece protobuf torchvision\n"
             "import transformers, peft, torch\n"
             "print('transformers', transformers.__version__, '| peft', peft.__version__, '| torch', torch.__version__, '| cuda', torch.cuda.is_available())"
         ),

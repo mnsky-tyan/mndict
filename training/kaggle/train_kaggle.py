@@ -17,6 +17,21 @@ import subprocess
 import sys
 
 import torch
+
+# pip -U upgrades can leave Kaggle's preinstalled torch/torchvision pair
+# mismatched, which crashes transformers' own import (torchvision
+# ::nms register_fake). Realign torchvision BEFORE transformers/peft import.
+subprocess.run(
+    [sys.executable, "-m", "pip", "install", "-q", "-U", "torchvision"],
+    check=False,
+)
+try:
+    import torchvision  # noqa: F401
+
+    print("torchvision", torchvision.__version__)
+except Exception as e:  # text-only training works without it
+    print("torchvision import failed (continuing):", e)
+
 from peft import LoraConfig, PeftModel, get_peft_model
 from torch.utils.data import Dataset
 from transformers import (
