@@ -85,10 +85,10 @@ def main():
         "metadata": {
             "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
             "language_info": {"name": "python", "version": "3.11"},
+            # NOTE: do NOT add a "kaggle" key here — an experimental
+            # kaggle.accelerator entry made Kaggle's importer fail silently
+            # (every import after it produced an empty notebook).
             "accelerator": "NVIDIATeslaT4",
-            # Kaggle reads its OWN metadata key on import (top-level alone was
-            # ignored: the imported notebook showed kaggle.accelerator "none").
-            "kaggle": {"accelerator": "NVIDIATeslaT4"},
         },
         "nbformat": 4,
         "nbformat_minor": 5,
