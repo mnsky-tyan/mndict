@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../services/app_settings.dart';
 import '../../services/farm_profile.dart';
 import '../../services/vocabulary_service.dart';
-import '../../services/dictionary_service.dart';
+import '../../services/gemini_service.dart';
 import '../theme/glass_theme.dart';
 import '../widgets/aurora_orb.dart';
 import '../widgets/glass_container.dart';
@@ -13,7 +13,7 @@ import '../widgets/vocabulary_detail_popup.dart';
 
 class TestScreen extends StatefulWidget {
   final VocabularyService vocabularyService;
-  final DictionaryService? dictionaryService;
+  final GeminiService? dictionaryService;
   final AppSettings settings;
 
   /// The farm ledger: mastery pays coins AND XP/quests when present.

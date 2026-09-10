@@ -15,7 +15,7 @@ mndict — an offline dictionary app where a local LLM (via llama.cpp) explains 
 | `docs/` | Local notes on models and llama.cpp (untracked) |
 | `wiki/` | GitHub wiki sources (untracked, pending publish) |
 
-`app/lib/` is `main.dart` + `services/` (settings, dictionary/vocabulary logic, isolate, downloader, FFI bindings) + `ui/` (`screens/`, `widgets/`, `theme/`). The search/definition flow: `ui/glass_dictionary_app.dart` → `services/dictionary_service.dart` → `services/llama_isolate.dart` → `services/native_llama.dart` (dart:ffi) → `libllama.so`.
+`app/lib/` is `main.dart` + `services/` (settings, dictionary/vocabulary logic, isolate, downloader, FFI bindings) + `ui/` (`screens/`, `widgets/`, `theme/`). The search/definition flow: `ui/glass_dictionary_app.dart` → `services/gemini_service.dart` (Gemini API, bring-your-own key — the live engine). The local chain `services/dictionary_service.dart` → `services/llama_isolate.dart` → `services/native_llama.dart` (dart:ffi) → `libllama.so` stays in the tree but is dormant: nothing in the dictionary flow calls it.
 
 ## Native wiring (non-obvious)
 
@@ -41,8 +41,16 @@ flutter build apk --release   # APK lands in build/app/outputs/flutter-apk/
 - BOS handling differs per model family and is easy to get wrong: gemma-3 and MiniCPM5 need a literal BOS (`<bos>` / `<s>`) in the Dart template; gemma-4 (E2B) and LFM2.5 GGUFs set `add_bos_token=true`, so the tokenizer prepends it and a literal BOS would double it (gemma-4 double-BOS shipped accidentally until 2026-09-07 — verify per GGUF with the `tokenizer.ggml.add_bos_token` metadata, never per family). Templates were taken verbatim from each model's `chat_template.jinja`; they live in `app/lib/services/prompts.dart` (`buildLookupPrompt`/`buildSimilarityPrompt`), and `app/test/prompts_test.dart` locks the invariants (BOS rules, single user turn, byte-exact LoRA training prompt).
 - Gemma-4 replaced gemma-3's `<start_of_turn>`/`<end_of_turn>` with `<|turn>`/`<turn|>` and has no system role.
 - Prompt format for Gemma (legacy gemma-3 path) must start with `<bos>`, or the model can end generation immediately.
-- `DictionaryService.searchWord` has a double-submit guard (`isGenerating`) and Gemma lookups force a model reload to clear the KV context — preserve both when editing the lookup flow.
+- Lookups are Gemini-only with bring-your-own-key (no compiled-in key, no `.env` fallback): `gemini_service.dart` streams `gemini-3.6-flash` SSE with the `x-goog-api-key` header, keys live in secure storage (`api_key_store.dart`, minSdk 23), and a lookup without a stored key surfaces the settings state instead of calling. The system prompt must stay the verbatim `dictionarySystemPrompt` from `prompts.dart` — it defines the entry format and `None` abstention. The on-device picker is hidden behind `kOnDeviceModelPickerEnabled` in `ui/widgets/side_menu.dart`.
+- `GeminiService.searchWord` keeps the double-submit guard (`isGenerating`), the 120 s lookup / 60 s similarity watchdogs, and the `[Generation timed out]` token; the dormant `DictionaryService.searchWord` also forces a Gemma model reload to clear the KV context.
 - `DictionaryService.init()` must complete before consumers subscribe to its streams; `SideMenu` renders standalone (no Material wrapper around it).
-- The aurora background animates forever: in widget tests use fixed `tester.pump` durations, never `pumpAndSettle`. Tests mock `SharedPreferences` and the `path_provider` channel.
+- The aurora background animates forever: in widget tests use fixed `tester.pump` durations, never `pumpAndSettle`. Tests mock `SharedPreferences`, the `path_provider` channel, and the `flutter_secure_storage` channel (`plugins.it_nomads.com/flutter_secure_storage`) — an unmocked secure-storage call never completes under the fake-async test clock.
 - Verify on-device via wireless adb (`adb connect <phone-ip>`), release builds for perf. On MIUI: commit IME input with Enter, and retry an edge-tap once before concluding it failed.
 - Deep architecture docs live in `wiki/` (Architecture, Building-and-Running, Models-and-Sampling, LoRA-Fine-Tuning) and `artifacts/*.md` (build/FFI specs); the 2026-09 model bake-off plan lives in `docs/on-device-llm-research-2026-09.md`, its headword set in `app/assets/headwords_test.json`.
+
+## Maintaining this file
+
+Keep this file for knowledge useful to almost every future agent session in this project.
+Do not repeat what the codebase already shows; point to the authoritative file or command instead.
+Prefer rewriting or pruning existing entries over appending new ones.
+When updating this file, preserve this bar for all agents and keep entries concise.

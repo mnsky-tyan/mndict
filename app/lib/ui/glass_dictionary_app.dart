@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../services/app_settings.dart';
-import '../../services/dictionary_service.dart';
 import '../../services/farm_profile.dart';
-import '../../services/mnn_spike.dart';
 import '../../services/pig_service.dart';
+import '../../services/gemini_service.dart';
 import '../../services/vocabulary_service.dart';
 import 'theme/glass_theme.dart';
 import 'widgets/aurora_background.dart';
@@ -34,7 +33,7 @@ class GlassDictionaryApp extends StatefulWidget {
 class _GlassDictionaryAppState extends State<GlassDictionaryApp>
     with TickerProviderStateMixin {
   final AppSettings _settings = AppSettings();
-  DictionaryService? _dictionaryService;
+  GeminiService? _dictionaryService;
   late VocabularyService _vocabularyService;
   late final PigService _pigService;
   late final FarmProfile _farmProfile;
@@ -106,7 +105,7 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
     await _pigService.init();
     await _farmProfile.init();
 
-    _dictionaryService = DictionaryService(_settings);
+    _dictionaryService = GeminiService(_settings);
 
     // Subscribe BEFORE init(): the status stream is broadcast, so statuses
     // emitted during init (model checks, loading, ready) would be dropped.
@@ -139,12 +138,6 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
     });
 
     await _dictionaryService!.init();
-
-    // MNN in-app spike (MNN_SPIKE=1 builds only): paired engine sweep after
-    // the llama model is up, measured by the same "Decode summary" logs.
-    if (kMnnSpikeEnabled) {
-      unawaited(MnnSpike.runSweep(_dictionaryService!));
-    }
 
     setState(() {});
   }
@@ -365,9 +358,10 @@ class _GlassDictionaryAppState extends State<GlassDictionaryApp>
                               settings: _settings,
                               onThemeChanged: (val) => setState(() {}),
                               onFontSizeChanged: (val) => setState(() {}),
-                              onModelChanged: (url, filename) {
-                                _dictionaryService?.checkAndLoadModel();
-                              },
+                              // Dormant with the on-device model picker:
+                              // nothing to reload while lookups are
+                              // served by the Gemini engine.
+                              onModelChanged: (url, filename) {},
                             ),
                           ),
                         ),
@@ -924,7 +918,7 @@ class _SearchHintState extends State<_SearchHint>
                   if (!widget.isLoading) ...[
                     const SizedBox(height: 8),
                     Text(
-                      'Words, phrases, idioms — definitions\nstream in, generated on this device.',
+                      'Words, phrases, idioms — definitions\nstream in from Google\'s Gemini API.',
                       textAlign: TextAlign.center,
                       style: GlassText.body(
                         p,
