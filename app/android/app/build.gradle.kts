@@ -24,6 +24,8 @@ android {
         applicationId = "com.example.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
+        // 23 (not the Flutter default): flutter_secure_storage is
+        // Android-Keystore-backed and requires API 23+.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

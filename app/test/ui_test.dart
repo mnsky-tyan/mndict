@@ -24,6 +24,13 @@ void main() {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async => '/tmp');
+    // Mock flutter_secure_storage: reads answer null (no stored key),
+    // so lookups exercise the no-key gate. A real call would never
+    // complete inside the fake-async test clock.
+    const secureChannel =
+        MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureChannel, (call) async => null);
 
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MaterialApp(home: GlassDictionaryApp()));
@@ -59,6 +66,13 @@ void main() {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async => '/tmp');
+    // Mock flutter_secure_storage: reads answer null (no stored key),
+    // so lookups exercise the no-key gate. A real call would never
+    // complete inside the fake-async test clock.
+    const secureChannel =
+        MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureChannel, (call) async => null);
 
     await tester.pumpWidget(const MaterialApp(home: GlassDictionaryApp()));
     await tester.pump();
@@ -103,6 +117,13 @@ void main() {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async => '/tmp');
+    // Mock flutter_secure_storage: reads answer null (no stored key),
+    // so lookups exercise the no-key gate. A real call would never
+    // complete inside the fake-async test clock.
+    const secureChannel =
+        MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureChannel, (call) async => null);
 
     await tester.pumpWidget(const MaterialApp(home: GlassDictionaryApp()));
     await tester.pump();
@@ -135,6 +156,13 @@ void main() {
     const channel = MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (call) async => '/tmp');
+    // Mock flutter_secure_storage: reads answer null (no stored key),
+    // so lookups exercise the no-key gate. A real call would never
+    // complete inside the fake-async test clock.
+    const secureChannel =
+        MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(secureChannel, (call) async => null);
 
     await tester.pumpWidget(const MaterialApp(home: GlassDictionaryApp()));
     await tester.pump();

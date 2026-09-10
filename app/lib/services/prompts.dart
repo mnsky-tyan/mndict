@@ -26,6 +26,24 @@ const String _dictionarySystemPrompt = "You are a dictionary assistant. Explain 
     "Plain text only, no markdown. "
     "If you are not certain the entry exists, or you don't know it, reply only: None.";
 
+/// Public alias so engines outside the local-llama path (the Gemini
+/// service) carry the same system instruction VERBATIM - this is what
+/// preserves the entry format and the None abstention.
+const String dictionarySystemPrompt = _dictionarySystemPrompt;
+
+/// Semantic-similarity scorer instruction, shared by the per-family
+/// templates and the Gemini engine.
+String similarityInstruction({
+  required String word,
+  required String definition,
+}) {
+  return "You are a semantic similarity checker. Compare the user's definition to the actual definition. "
+      "Output ONLY a single number between 0.0 and 1.0 representing the similarity score. "
+      "0.0 means completely wrong, 1.0 means perfect match. No other text.\n"
+      "Word: $word\n"
+      "Actual Definition: $definition";
+}
+
 /// Builds the lookup prompt for one headword, per model family.
 String buildLookupPrompt(PromptStyle style, String word) {
   switch (style) {
@@ -126,12 +144,7 @@ String buildSimilarityPrompt(
   required String definition,
   required String userInput,
 }) {
-  final systemMsg =
-      "You are a semantic similarity checker. Compare the user's definition to the actual definition. "
-      "Output ONLY a single number between 0.0 and 1.0 representing the similarity score. "
-      "0.0 means completely wrong, 1.0 means perfect match. No other text.\n"
-      "Word: $word\n"
-      "Actual Definition: $definition";
+  final systemMsg = similarityInstruction(word: word, definition: definition);
 
   final userMsg = "User Definition: $userInput";
 

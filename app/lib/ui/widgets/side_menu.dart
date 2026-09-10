@@ -3,12 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../../services/app_settings.dart';
 import '../../services/model_downloader.dart';
+import '../screens/api_key_screen.dart';
 import '../screens/model_settings_screen.dart';
 import '../screens/placeholder_screen.dart';
 import '../theme/glass_theme.dart';
 import 'aurora_orb.dart';
 import 'glass_container.dart';
 import 'pressable.dart';
+/// The on-device GGUF engine is dormant while lookups run through the
+/// Gemini API (bring-your-own-key). Flip this back to true to restore
+/// the model picker and sampling settings; the local-engine code and
+/// tests all remain in the tree.
+const bool kOnDeviceModelPickerEnabled = false;
+
 class SideMenu extends StatefulWidget {
   final AppSettings settings;
   final Function(bool) onThemeChanged;
@@ -96,7 +103,7 @@ class _SideMenuState extends State<SideMenu> {
                               Text('mndict',
                                   style: GlassText.display(p, 22)),
                               const SizedBox(height: 2),
-                              Text('Offline AI dictionary',
+                              Text('AI dictionary powered by Gemini',
                                   style: GlassText.body(p, 13,
                                       color: p.textSecondary)),
                             ],
@@ -108,6 +115,15 @@ class _SideMenuState extends State<SideMenu> {
                 ),
 
                 const SizedBox(height: 26),
+                Text('GEMINI API', style: GlassText.eyebrow(p)),
+                const SizedBox(height: 10),
+                _MenuRow(
+                  palette: p,
+                  icon: FontAwesomeIcons.key,
+                  label: 'API Key',
+                  onTap: () => _push(ApiKeyScreen(settings: widget.settings)),
+                ),
+                const SizedBox(height: 22),
                 Text('PREFERENCES', style: GlassText.eyebrow(p)),
                 const SizedBox(height: 10),
                 GlassContainer(
@@ -195,9 +211,10 @@ class _SideMenuState extends State<SideMenu> {
                 ),
 
                 const SizedBox(height: 22),
-                Text('AI MODEL', style: GlassText.eyebrow(p)),
-                const SizedBox(height: 10),
-                ...AppSettings.availableModels.map((model) {
+                if (kOnDeviceModelPickerEnabled) ...[
+                  Text('AI MODEL', style: GlassText.eyebrow(p)),
+                  const SizedBox(height: 10),
+                  ...AppSettings.availableModels.map((model) {
                   final selected =
                       model.filename == widget.settings.selectedModelFilename;
                   return Padding(
@@ -262,6 +279,7 @@ class _SideMenuState extends State<SideMenu> {
                   );
                 }),
 
+                ],
                 const SizedBox(height: 14),
                 Text('MORE', style: GlassText.eyebrow(p)),
                 const SizedBox(height: 10),
@@ -296,13 +314,14 @@ class _SideMenuState extends State<SideMenu> {
                             title: "Background")),
                       ),
                       _hairline(p),
-                      _MenuRow(
-                        palette: p,
-                        icon: FontAwesomeIcons.sliders,
-                        label: 'Model Settings',
-                        onTap: () => _push(ModelSettingsScreen(
-                            settings: widget.settings)),
-                      ),
+                      if (kOnDeviceModelPickerEnabled)
+                        _MenuRow(
+                          palette: p,
+                          icon: FontAwesomeIcons.sliders,
+                          label: 'Model Settings',
+                          onTap: () => _push(ModelSettingsScreen(
+                              settings: widget.settings)),
+                        ),
                     ],
                   ),
                 ),

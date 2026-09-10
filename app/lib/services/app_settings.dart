@@ -192,6 +192,7 @@ class AppSettings {
     _topP = _prefs.getDouble(_keyTopP) ?? 0.95;
     _topK = _prefs.getInt(_keyTopK) ?? 40;
     _threadCount = _prefs.getInt(_keyThreadCount) ?? 4;
+    _cloudNoticeShown = _prefs.getBool(_keyCloudNotice) ?? false;
   }
 
   Future<void> setFontSize(double size) async {
@@ -240,8 +241,19 @@ class AppSettings {
     }
   }
 
+  /// One-time gate for the "queries go to Google's Gemini API" notice:
+  /// the first cloud lookup surfaces it, every later one skips it.
+  bool _cloudNoticeShown = false;
+  bool get cloudNoticeShown => _cloudNoticeShown;
+
+  Future<void> markCloudNoticeShown() async {
+    _cloudNoticeShown = true;
+    await _prefs.setBool(_keyCloudNotice, true);
+  }
+
   // Thread Count
   int _threadCount = 4;
+  static const String _keyCloudNotice = 'cloud_notice_shown';
   static const String _keyThreadCount = 'thread_count';
   int get threadCount => _threadCount;
 
