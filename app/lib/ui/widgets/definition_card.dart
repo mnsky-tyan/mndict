@@ -4,6 +4,7 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../theme/glass_theme.dart';
 import 'aurora_orb.dart';
+import 'blocked_image.dart';
 import 'glass_container.dart';
 import 'pressable.dart';
 
@@ -110,6 +111,9 @@ class DefinitionCard extends StatelessWidget {
                       child: MarkdownBody(
                         data: content!,
                         softLineBreak: true,
+                        builders: {
+                          'img': BlockedImageBuilder(p),
+                        },
                         styleSheet: MarkdownStyleSheet(
                           p: GlassText.reading(p, bodySize,
                               height: 1.7,

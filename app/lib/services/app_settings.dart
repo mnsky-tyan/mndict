@@ -46,20 +46,6 @@ class AppSettings {
   static const List<ModelConfig> availableModels = [
     // --- 2026-09 model bake-off candidates (docs/on-device-llm-research-2026-09.md) ---
     ModelConfig(
-      name: 'LFM2.5 1.2B PILOT (LoRA Q4_0)',
-      // Local-LAN build served from the dev PC (training/out/); not a public URL.
-      // Q4_0: 4.6x faster prefill + ~1.5x faster decode than Q4_K_M on-device
-      // (KleidiAI i8mm path); promptStyle lfm25tuned = byte-exact training prompt.
-      // DSpark 296M draft: speculative decoding, measured +40% on desktop.
-      url: 'http://192.168.0.116:8090/pilot-q40.gguf',
-      filename: 'LFM2.5-Pilot-Q4_0.gguf',
-      promptStyle: PromptStyle.lfm25tuned,
-      sizeMB: 696,
-      draftUrl: 'http://192.168.0.116:8090/DSpark-Q8_0.gguf',
-      draftFilename: 'LFM2.5-DSpark-Q8_0.gguf',
-      draftSizeMB: 302,
-    ),
-    ModelConfig(
       name: 'LFM2.5 1.2B',
       url: 'https://huggingface.co/LiquidAI/LFM2.5-1.2B-Instruct-GGUF/resolve/main/LFM2.5-1.2B-Instruct-Q4_K_M.gguf',
       filename: 'LFM2.5-1.2B-Instruct-Q4_K_M.gguf',
@@ -84,10 +70,10 @@ class AppSettings {
       name: 'Gemma 4 E2B (QAT)',
       // 2026-09 bake-off WINNER: 84/84 zero-shot entry-format compliance, best
       // prose tested. 5.1B raw / ~2.3B effective (PLE): 2B-class decode speed,
-      // 3.35GB RAM. LAN URL = dev PC mirror; the HF URL still works as before.
+      // 3.35GB RAM. Official Google QAT GGUF from Hugging Face.
       // Abstention (None policy) NOT trained yet — made-up words get confident
       // definitions until the E2B pilot LoRA lands.
-      url: 'http://192.168.0.116:8090/gemma-4-E2B_q4_0-it.gguf',
+      url: 'https://huggingface.co/google/gemma-4-E2B-it-qat-q4_0-gguf/resolve/main/gemma-4-E2B_q4_0-it.gguf',
       filename: 'gemma-4-E2B_q4_0-it.gguf',
       promptStyle: PromptStyle.gemma4,
       sizeMB: 3195,
