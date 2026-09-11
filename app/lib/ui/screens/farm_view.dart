@@ -18,9 +18,11 @@ import '../widgets/world_themes.dart';
 import 'farm_journal.dart' show showFarmJournal;
 
 /// Test-build escape hatch: long-press the coin pill to grant +1,000.
-/// True so on-device playtesting has coins; flip to false before any
-/// APK leaves this desk.
-const bool kTestBuildsGrantCoins = true;
+/// Grants only in builds launched with
+/// `--dart-define=MNDICT_TEST_GRANTS=true`; normal and release builds
+/// never grant.
+const bool kTestBuildsGrantCoins =
+    bool.fromEnvironment('MNDICT_TEST_GRANTS', defaultValue: false);
 
 /// The Home tab: a pastoral world (in the 摩爾莊園 tradition) that grows
 /// with the farm's level. Pigs arrive by gacha pull at the Market, raise

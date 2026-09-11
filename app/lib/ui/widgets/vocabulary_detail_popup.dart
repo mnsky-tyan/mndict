@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../theme/glass_theme.dart';
+import 'blocked_image.dart';
 import 'glass_container.dart';
 import 'glass_page.dart';
 
@@ -105,6 +106,9 @@ class VocabularyDetailPopup extends StatelessWidget {
                 child: MarkdownBody(
                   data: definition,
                   softLineBreak: true,
+                  builders: {
+                    'img': BlockedImageBuilder(p),
+                  },
                   styleSheet: MarkdownStyleSheet(
                     p: GlassText.reading(p, 13.5,
                         height: 1.7,

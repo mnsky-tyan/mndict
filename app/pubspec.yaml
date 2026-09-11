@@ -41,6 +41,9 @@ dependencies:
   google_fonts: ^6.3.2
   font_awesome_flutter: ^10.12.0
   flutter_markdown: ^0.6.18
+  # Direct dep for blocked_image.dart's MarkdownElementBuilder override;
+  # resolved through flutter_markdown anyway.
+  markdown: ^7.3.0
   flutter_secure_storage: ^10.3.2
 
 dev_dependencies:
